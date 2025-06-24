@@ -1,12 +1,12 @@
 use warp::Filter;
 use warp::{reject::Rejection, reply::Reply};
 
-use crate::state::{SharedState, with_state};
+use crate::state::{AppState, with_state};
 
 mod sync_problems;
 
 pub fn handle_routes(
-    state: SharedState,
+    state: AppState,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let sync_problems_api = warp::path!("api" / "sync-problems")
         .and(warp::post())

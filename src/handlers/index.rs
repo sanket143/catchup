@@ -1,9 +1,9 @@
 use tera::Context;
 use warp::{reject::Rejection, reply::Reply};
 
-use crate::{state::SharedState, templates::init::get_tera};
+use crate::{state::AppState, templates::init::get_tera};
 
-pub async fn handler(state: SharedState) -> Result<impl Reply, Rejection> {
+pub async fn handler(state: AppState) -> Result<impl Reply, Rejection> {
     let mut context = Context::new();
     context.insert("title", "Practice");
     context.insert("message", "Hello from Warp and Tera!");

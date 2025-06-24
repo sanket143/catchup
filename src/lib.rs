@@ -1,10 +1,7 @@
 use anyhow::Result;
 use handlers::{api, index};
-use limbo::{Builder, params_from_iter};
-use state::{AppState, with_state};
+use state::{create_app_state, with_state};
 use std::fs;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::Filter;
 
 mod db;
@@ -15,9 +12,8 @@ mod templates;
 
 pub async fn run() -> Result<()> {
     templates::init::init_tera("templates/**/*.html").expect("Failed to initialize Tera");
-    let db_path = "data/data.db";
-    let db_conn = Builder::new_local(db_path).build().await?.connect()?;
-    let app_state = Arc::new(RwLock::new(AppState { db_conn }));
+    let db_url = "sqlite:data/data.db";
+    let app_state = create_app_state(db_url).await?;
 
     let index = warp::path::end()
         .and(warp::get())
@@ -38,8 +34,8 @@ pub async fn run() -> Result<()> {
 }
 
 pub async fn migrate() -> Result<()> {
-    let db_path = "data/data.db";
-    let db_conn = Builder::new_local(db_path).build().await?.connect()?;
+    let db_url = "sqlite:data/data.db";
+    let app_state = create_app_state(db_url).await?;
 
     let mut migrations = fs::read_dir("./migrations")?
         .map(|res| res.map(|e| e.path()))
@@ -48,15 +44,9 @@ pub async fn migrate() -> Result<()> {
     migrations.sort();
 
     for path in migrations.iter() {
-        println!("{}", path.display());
+        // TODO: Use sqlx::migrate
         let query = fs::read_to_string(path).unwrap();
-
-        // lazy spliting, if there's ';' in comment then this will break;
-        for sql in query.split(';') {
-            if sql.trim().len() > 0 {
-                db_conn.execute(&sql, ()).await?;
-            }
-        }
+        sqlx::query(&query).execute(&app_state.db_pool).await?;
     }
 
     Ok(())

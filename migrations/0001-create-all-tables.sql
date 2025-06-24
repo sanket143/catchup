@@ -6,18 +6,20 @@ create table if not exists user (
 
 create table if not exists platform (
     id integer primary key autoincrement,
-    uid varchar(256) not null, -- codeforces, leetcode, codechef, atcoder, yukicoder
+    uid varchar(256) not null unique, -- codeforces, leetcode, codechef, atcoder, yukicoder
     name varchar(256) not null
 );
 
+insert into platform (uid, name) values ('codeforces', 'Codeforces');
+
 create table if not exists problem (
     id integer primary key autoincrement,
-    fk_platform_uid varchar(256) not null,
-    problem_uid varchar(256) not null, -- CF/1122/D2, LC/123
+    platform_uid varchar(256) not null unique, -- CF/1122/D2, LC/123
+    fk_platform_id varchar(256) not null,
     title text,
     url text not null,
     created_at timestamp default current_timestamp,
-    metadata text,
+    metadata json,
 
-    foreign key (fk_platform_uid) references platform(uid)
+    foreign key (fk_platform_id) references platform(id)
 );

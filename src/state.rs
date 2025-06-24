@@ -1,16 +1,20 @@
-use limbo::Connection;
-use std::sync::Arc;
-use tokio::sync::RwLock;
-use warp::Filter; // Import Limbo types
+// src/state.rs (for sqlx)
+use sqlx::SqlitePool;
+use warp::Filter;
 
+#[derive(Clone)]
 pub struct AppState {
-    pub db_conn: Connection,
+    pub db_pool: SqlitePool,
 }
 
-pub type SharedState = Arc<RwLock<AppState>>;
+pub async fn create_app_state(database_url: &str) -> Result<AppState, sqlx::Error> {
+    let db_pool = SqlitePool::connect(database_url).await?;
+
+    Ok(AppState { db_pool })
+}
 
 pub fn with_state(
-    state: SharedState,
-) -> impl Filter<Extract = (SharedState,), Error = std::convert::Infallible> + Clone {
+    state: AppState,
+) -> impl Filter<Extract = (AppState,), Error = std::convert::Infallible> + Clone {
     warp::any().map(move || state.clone())
 }
