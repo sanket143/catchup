@@ -3,23 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}My Rust App{% endblock title %}</title>
+    <title>{% block title %}Ketchup Trainer{% endblock title %}</title>
     <link rel="stylesheet" href="/static/css/style.css" />
   </head>
   <body>
-    <header>
-      <h1>My Awesome App</h1>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/login">Login</a>
+    <div class="flex flex-column header-container">
+      <nav class="nav flex flex-row content-bounds">
+        <a class="nav-item nav-item-current" href="/">Home</a>
+        <a class="nav-item" href="/local-contest">Local Contest</a>
+        <a class="nav-item" href="/settings">Settings</a>
+        <div class="spacer"></div>
+        <a class="nav-item" href="/login">Login</a>
       </nav>
-    </header>
-
-    <main>{% block content %}{% endblock content %}</main>
-
-    <footer>
-      <p>&copy; 2025 My Rust App</p>
-    </footer>
+      <main>{% block content %}{% endblock content %}</main>
+    </div>
     <script src="/static/js/script.js"></script>
   </body>
 </html>

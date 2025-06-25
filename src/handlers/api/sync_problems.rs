@@ -1,27 +1,7 @@
-use serde::Deserialize;
 use serde_json::json;
 use warp::{reject::Rejection, reply::Reply};
 
-use crate::state::AppState;
-
-#[derive(Deserialize)]
-struct Response {
-    result: ResponseResult,
-}
-
-#[derive(Deserialize, Debug)]
-struct Problem {
-    #[serde(rename = "contestId")]
-    contest_id: usize,
-    index: String,
-    name: String,
-    tags: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-struct ResponseResult {
-    problems: Vec<Problem>,
-}
+use crate::{models::Response, state::AppState};
 
 pub async fn handler(state: AppState) -> Result<impl Reply, Rejection> {
     println!("Syncing Codeforces problems...");
@@ -45,7 +25,8 @@ pub async fn handler(state: AppState) -> Result<impl Reply, Rejection> {
         );
         for problem in chunk.iter() {
             let metadata = json!({
-                "tags": serde_json::to_value(&problem.tags).unwrap()
+                "tags": serde_json::to_value(&problem.tags).unwrap(),
+                "rating": serde_json::to_value(&problem.rating).unwrap()
             });
 
             sql.push_str(&format!(

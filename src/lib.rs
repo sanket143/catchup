@@ -1,5 +1,5 @@
 use anyhow::Result;
-use handlers::{api, index};
+use handlers::{api, index, local_contest};
 use state::{create_app_state, with_state};
 use warp::Filter;
 
@@ -19,12 +19,15 @@ pub async fn run() -> Result<()> {
         .and(warp::get())
         .and(with_state(app_state.clone()))
         .and_then(index::handler);
+    let local_contest = warp::path("local-contest")
+        .and(warp::get())
+        .and(with_state(app_state.clone()))
+        .and_then(local_contest::handler);
 
-    let hello = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
     let static_files = warp::path("static").and(warp::fs::dir("static"));
 
     let routes = index
-        .or(hello)
+        .or(local_contest)
         .or(static_files)
         .or(api::handle_routes(app_state.clone()));
 
