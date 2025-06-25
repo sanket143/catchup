@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use serde_json::json;
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::state::AppState;
@@ -43,28 +44,31 @@ pub async fn handler(state: AppState) -> Result<impl Reply, Rejection> {
             "INSERT INTO problem (platform_uid, fk_platform_id, title, url, metadata) VALUES ",
         );
         for problem in chunk.iter() {
+            let metadata = json!({
+                "tags": serde_json::to_value(&problem.tags).unwrap()
+            });
+
             sql.push_str(&format!(
-                "('{}/{}', 1, '{}', 'https://codeforces.com/problemset/problem/{}/{}', '{}'),",
+                "('CF/{}/{}', 1, '{}', 'https://codeforces.com/problemset/problem/{}/{}', '{}'),",
                 problem.contest_id,
                 problem.index,
                 problem.name.replace("'", "''"),
                 problem.contest_id,
                 problem.index,
-                serde_json::to_value(&problem.tags).unwrap()
+                metadata
             ));
         }
 
         sql = sql.trim_matches(',').to_owned();
+        sql.push_str("on conflict (platform_uid) do update set title = EXCLUDED.title, url = EXCLUDED.url, metadata = EXCLUDED.metadata");
 
-        let result = sqlx::query(&sql)
+        sqlx::query(&sql)
             .execute(&state.db_pool)
             .await
             .map_err(|err| {
                 println!("ERR: {:?}", err);
                 warp::reject()
             })?;
-
-        println!("{:?}", result);
     }
 
     println!("Sync complete!");

@@ -962,6 +962,7 @@ name = "ketchup"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "dotenvy",
  "lazy_static",
  "once_cell",
  "serde",
