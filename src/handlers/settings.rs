@@ -6,11 +6,10 @@ use warp::{reject::Rejection, reply::Reply};
 
 pub async fn handler(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejection> {
     let mut context = Context::new();
-    context.insert("title", "Practice");
-    context.insert("message", "Hello from Warp and Tera!");
-    context.insert("current_page", "home");
+    context.insert("title", "Settings");
+    context.insert("current_page", "settings");
 
-    let rendered = get_tera().render("index.html", &context).map_err(|e| {
+    let rendered = get_tera().render("settings.html", &context).map_err(|e| {
         eprintln!("Tera rendering error: {:?}", e);
         warp::reject::reject()
     })?;

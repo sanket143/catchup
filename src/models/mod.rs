@@ -1,5 +1,16 @@
 use serde::Deserialize;
 
+#[derive(Debug)]
+pub struct User {
+    username: String,
+}
+
+impl User {
+    pub fn new(username: String) -> Self {
+        Self { username }
+    }
+}
+
 #[derive(Deserialize)]
 pub struct Response {
     pub result: ResponseResult,

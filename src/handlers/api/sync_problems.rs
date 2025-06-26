@@ -1,9 +1,11 @@
 use serde_json::json;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::{models::Response, state::AppState};
 
-pub async fn handler(state: AppState) -> Result<impl Reply, Rejection> {
+pub async fn handler(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejection> {
     println!("Syncing Codeforces problems...");
     let body: Response = ureq::get("https://codeforces.com/api/problemset.problems")
         .call()
@@ -44,7 +46,7 @@ pub async fn handler(state: AppState) -> Result<impl Reply, Rejection> {
         sql.push_str("on conflict (platform_uid) do update set title = EXCLUDED.title, url = EXCLUDED.url, metadata = EXCLUDED.metadata");
 
         sqlx::query(&sql)
-            .execute(&state.db_pool)
+            .execute(&state.read().await.db_pool)
             .await
             .map_err(|err| {
                 println!("ERR: {:?}", err);

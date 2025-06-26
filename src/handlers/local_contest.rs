@@ -1,12 +1,15 @@
 use sqlx::Row;
+use std::sync::Arc;
 use tera::Context;
+use tokio::sync::RwLock;
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::{state::AppState, templates::init::get_tera};
 
-pub async fn handler(state: AppState) -> Result<impl Reply, Rejection> {
+pub async fn handler(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejection> {
     let mut context = Context::new();
     context.insert("title", "Local Contest");
+    context.insert("current_page", "local-contest");
 
     let result = sqlx::query(
         "
@@ -17,7 +20,7 @@ pub async fn handler(state: AppState) -> Result<impl Reply, Rejection> {
             limit 4;
         ",
     )
-    .fetch_all(&state.db_pool)
+    .fetch_all(&state.read().await.db_pool)
     .await
     .map_err(|err| {
         println!("ERR: {:?}", err);

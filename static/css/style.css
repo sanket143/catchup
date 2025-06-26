@@ -7,21 +7,22 @@
 }
 
 :root {
-  --color-0: #22577a;
-  --color-1: #38a3a5;
-  --color-2: #57cc99;
-  --color-3: #80ed99;
-  --color-4: #c7f9cc;
+  --color-0: #9c89b8;
+  --color-1: #9c89b8;
+  --color-2: #9c89b8;
+  --color-3: #2D2A32;
+  --color-4: #F6E8EA;
   --font-color-0: #000000;
   --font-color-1: #2b2d42;
-  --font-color-2: #006d77
+  --font-color-2: #ffffff;
 }
 
 body {
   font-family: 'JetBrains Mono', monospace;
   font-variant-ligatures: none;
   line-height: 1.6;
-  color: var(--font-color-0);
+  color: var(--font-color-2);
+  background: var(--color-3);
 }
 
 main {
@@ -30,12 +31,12 @@ main {
 
 a {
   text-decoration: none;
-  color: var(--font-color-0);
+  color: var(--font-color-2);
 }
 
 a:hover {
   text-decoration: underline;
-  color: var(--font-color-1);
+  color: var(--font-color-2);
 }
 
 td, th {
@@ -65,7 +66,6 @@ td, th {
   height: 100%;
   padding: 10px 20px;
   gap: 20px;
-  color: var(--font-color-1);
   background: var(--color-4);
 }
 
@@ -93,4 +93,23 @@ td, th {
 
 .nav-item.nav-item-current {
   border-bottom-color: var(--color-1);
+}
+
+input {
+  min-width: 300px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+button {
+  padding: 10px;
+  background: var(--color-2);
+  border-color: var(--color-3);
+  color: var(--font-color-2);
+  box-shadow: none;
+  border-style: solid;
+}
+
+h1 {
+  margin-top: 0px;
 }

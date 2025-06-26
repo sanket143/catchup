@@ -9,11 +9,11 @@
   <body>
     <div class="flex flex-column header-container">
       <nav class="nav flex flex-row content-bounds">
-        <a class="nav-item nav-item-current" href="/">Home</a>
-        <a class="nav-item" href="/local-contest">Local Contest</a>
-        <a class="nav-item" href="/settings">Settings</a>
+        <a class="nav-item{% if current_page == 'home' %} nav-item-current {% endif %}" href="/">Home</a>
+        <a class="nav-item{% if current_page == 'local-contest' %} nav-item-current {% endif %}" href="/local-contest">Local Contest</a>
+        <a class="nav-item{% if current_page == 'settings' %} nav-item-current {% endif %}" href="/settings">Settings</a>
         <div class="spacer"></div>
-        <a class="nav-item" href="/login">Login</a>
+        <a class="nav-item{% if current_page == 'login' %} nav-item-current {% endif %}" href="/login">Login</a>
       </nav>
       <main>{% block content %}{% endblock content %}</main>
     </div>
