@@ -1,0 +1,10 @@
+@import './base.css';
+
+#app {
+  display: flex;
+  flex-direction: column;
+  font-weight: normal;
+  height: 100vh;
+  gap: var(--section-gap);
+  padding: var(--section-gap);
+}

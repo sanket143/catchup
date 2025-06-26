@@ -10,15 +10,15 @@
   --color-0: #9c89b8;
   --color-1: #9c89b8;
   --color-2: #9c89b8;
-  --color-3: #2D2A32;
-  --color-4: #F6E8EA;
+  --color-3: #2d2a32;
+  --color-4: #f6e8ea;
   --font-color-0: #000000;
   --font-color-1: #2b2d42;
   --font-color-2: #ffffff;
 }
 
 body {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-variant-ligatures: none;
   line-height: 1.6;
   color: var(--font-color-2);
@@ -39,7 +39,8 @@ a:hover {
   color: var(--font-color-2);
 }
 
-td, th {
+td,
+th {
   text-align: left;
   padding: 2.5px;
   min-width: 150px;
@@ -59,14 +60,6 @@ td, th {
 
 .spacer {
   flex: 1;
-}
-
-.nav {
-  overflow-x: auto;
-  height: 100%;
-  padding: 10px 20px;
-  gap: 20px;
-  background: var(--color-4);
 }
 
 .nav a {
