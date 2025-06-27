@@ -1,15 +1,22 @@
+use serde::Deserialize;
 use sqlx::Row;
 use std::sync::Arc;
-use tera::Context;
 use tokio::sync::RwLock;
 use warp::{reject::Rejection, reply::Reply};
 
-use crate::{state::AppState, templates::init::get_tera};
+use crate::state::AppState;
 
-pub async fn handler(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejection> {
-    let mut context = Context::new();
-    context.insert("title", "Local Contest");
-    context.insert("current_page", "local-contest");
+#[derive(Deserialize, Debug)]
+pub struct ListProblemInput {
+    #[serde(rename = "contestId")]
+    contest_id: Option<usize>,
+}
+
+pub async fn list_problems(
+    state: Arc<RwLock<AppState>>,
+    input: ListProblemInput,
+) -> Result<impl Reply, Rejection> {
+    println!("{:?}", input);
 
     let result = sqlx::query(
         "
@@ -42,14 +49,6 @@ pub async fn handler(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejecti
         })
         .collect();
 
-    context.insert("problems", &problems);
-
-    let rendered = get_tera()
-        .render("local-contest.html", &context)
-        .map_err(|e| {
-            eprintln!("Tera rendering error: {:?}", e);
-            warp::reject::reject()
-        })?;
-
-    Ok(warp::reply::html(rendered))
+    println!("Sync complete!");
+    Ok(warp::reply())
 }

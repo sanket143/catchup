@@ -16,14 +16,20 @@ pub struct Response {
     pub result: ResponseResult,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Problem {
     #[serde(rename = "contestId")]
-    pub contest_id: usize,
+    pub contest_id: u32,
     pub index: String,
     pub name: String,
     pub tags: Vec<String>,
-    pub rating: Option<usize>,
+    pub rating: Option<u32>,
+}
+
+impl Problem {
+    pub fn get_uid(&self) -> String {
+        format!("CF/{}/{}", self.contest_id, self.index)
+    }
 }
 
 #[derive(Deserialize, Debug)]
