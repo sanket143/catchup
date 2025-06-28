@@ -10,7 +10,7 @@
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f3f3f3;
   --vt-c-black: #000000;
-  --vt-c-primary: #2c3e50;
+  --vt-c-primary: #003e7c;
   --vt-c-off-primary: #9dacff;
 
   /* status colors */
@@ -21,6 +21,7 @@
 
   --vt-c-text-light-1: var(--vt-c-black);
   --vt-c-text-light-2: var(--vt-c-primary);
+  --vt-c-text-light-3: var(--vt-c-gray);
   --vt-c-text-dark-1: var(--vt-c-white);
 }
 
@@ -29,6 +30,7 @@
   --color-background: var(--vt-c-white-soft);
   --color-background-soft: var(--vt-c-white);
   --color-text: var(--vt-c-text-light-1);
+  --color-text-disabled: var(--vt-c-text-light-3);
   --color-text-link: var(--vt-c-text-light-2);
 
   --section-gap: 20px;
@@ -67,4 +69,8 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+input {
+  font-family: 'JetBrains Mono';
 }

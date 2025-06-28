@@ -8,3 +8,17 @@
   gap: var(--section-gap);
   padding: var(--section-gap);
 }
+
+a {
+  cursor: pointer;
+  color: var(--color-text-link);
+}
+
+a:hover:not(.disabled) {
+  text-decoration: underline;
+}
+
+a.disabled {
+  cursor: initial;
+  color: var(--color-text-disabled);
+}
