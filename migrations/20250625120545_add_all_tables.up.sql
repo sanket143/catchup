@@ -50,3 +50,25 @@ create table if not exists problem_tag_map (
 );
 
 create index if not exists problem_tag_map_problem_tag_id_idx on problem_tag_map (fk_problem_tag_id);
+
+create table if not exists contest (
+    id integer primary key autoincrement,
+    name varchar(256) not null default 'Local Contest',
+    duration integer not null default 120, -- minutes
+    created_on not null default current_time,
+    start_on not null default current_time,
+    is_deleted boolean default false
+);
+
+create table if not exists contest_problem (
+    id integer primary key autoincrement,
+    fk_contest_id integer not null,
+    fk_problem_id integer not null,
+    solved_at timestamp,
+    is_deleted boolean default false,
+
+    foreign key (fk_contest_id) references contest(id),
+    foreign key (fk_problem_id) references problem(id),
+
+    unique(fk_contest_id, fk_problem_id)
+);

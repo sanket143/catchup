@@ -1,4 +1,7 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useUserStore } from '@/stores/user'
+const userStore = useUserStore()
+</script>
 
 <template>
   <nav>
@@ -7,6 +10,10 @@
       >Local contest</router-link
     >
     <router-link to="/settings" active-class="active-link" class="nav-item">Settings</router-link>
+    <div class="spacer"></div>
+    <router-link to="/settings" active-class="active-link" class="nav-item">{{
+      userStore.getUsername
+    }}</router-link>
   </nav>
 </template>
 

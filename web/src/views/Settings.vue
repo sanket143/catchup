@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import axios from 'axios'
 import { ref, watch } from 'vue'
+import { useUserStore } from '@/stores/user'
 
 let isSyncingProblems = ref(false)
-let username = ref('')
+const userStore = useUserStore()
+let username = ref(userStore.getUsername)
 
 watch(username, (val) => {
-  document.cookie = 'username=' + val + ';'
+  userStore.updateUsername(val)
 })
 
 async function syncProblems() {
@@ -44,9 +46,9 @@ async function syncProblems() {
         <a :class="{ disabled: isSyncingProblems }" @click="syncProblems">Sync problems</a>
       </div>
       <div>
-        <a
-          >Sync user solved submissions (for
-          {{ username ? username : '<codeforces-username>' }})</a
+        <a>
+          Sync user solved submissions (for
+          {{ userStore.getUsername ? userStore.getUsername : '\<codeforces-username>' }})</a
         >
       </div>
     </div>
