@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            insert into contest (name, duration, created_for)\n            values (?, ?, ?) returning id, name, duration, created_on, started_on;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "duration",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_on",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "started_on",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "caf96811581471326eb5a0521e67d90fe2032dab2094d36202aa81a6fa9f8582"
+}

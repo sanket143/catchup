@@ -7,31 +7,22 @@ use tokio::sync::RwLock;
 use warp::{reject::Rejection, reply::Reply};
 const BIND_LIMIT: usize = 32766;
 
+use crate::warp_err;
 use crate::{models::Response, state::AppState};
 
 pub async fn handler(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejection> {
     println!("Syncing Codeforces problems...");
-    let body: Response = ureq::get("https://codeforces.com/api/problemset.problems")
-        .call()
-        .map_err(|err| {
-            println!("{:?}", err);
-            warp::reject()
-        })?
-        .body_mut()
-        .read_json()
-        .map_err(|err| {
-            println!("{:?}", err);
-            warp::reject()
-        })?;
+    let body: Response = warp_err!(
+        warp_err!(ureq::get("https://codeforces.com/api/problemset.problems").call())
+            .body_mut()
+            .read_json()
+    );
 
     let mut query_builder: QueryBuilder<Sqlite> = QueryBuilder::new("");
     let mut tags = HashSet::new();
     let mut problem_tags_map = vec![];
 
-    let mut tx = state.read().await.db_pool.begin().await.map_err(|err| {
-        println!("{:?}", err);
-        warp::reject()
-    })?;
+    let mut tx = warp_err!(state.read().await.db_pool.begin().await);
 
     // chunk size so that it never exceeds the bindings limit
     for chunk in body.result.problems.chunks(BIND_LIMIT / 6) {
@@ -113,20 +104,15 @@ pub async fn handler(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejecti
 
         problem_tag_map_query_builder
             .push(" on conflict (fk_problem_id, fk_problem_tag_id) do nothing;");
-        problem_tag_map_query_builder
-            .build()
-            .execute(&mut *tx)
-            .await
-            .map_err(|err| {
-                println!("{:?}", err);
-                warp::reject()
-            })?;
+        warp_err!(
+            problem_tag_map_query_builder
+                .build()
+                .execute(&mut *tx)
+                .await
+        );
     }
 
-    tx.commit().await.map_err(|err| {
-        println!("{:?}", err);
-        warp::reject()
-    })?;
+    warp_err!(tx.commit().await);
 
     println!("Sync complete!");
     Ok(warp::reply())

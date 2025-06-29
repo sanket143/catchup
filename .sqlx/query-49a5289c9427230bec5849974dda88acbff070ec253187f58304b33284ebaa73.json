@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            select id, name, duration, created_on, started_on from contest\n            where (contest.started_on + (duration * 60)) >= ? and created_for = ? limit 1; \n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "duration",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_on",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "started_on",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "49a5289c9427230bec5849974dda88acbff070ec253187f58304b33284ebaa73"
+}

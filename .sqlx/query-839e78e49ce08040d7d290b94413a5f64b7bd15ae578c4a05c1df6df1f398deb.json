@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            insert into contest_problem_map(fk_contest_id, fk_problem_id)\n            select ?, p.id\n            from problem_tag as pt\n            join problem_tag_map as ptm\n            on ptm.fk_problem_tag_id = pt.id\n            join problem as p\n            on p.id = ptm.fk_problem_id\n            and p.rating = ?\n            left join contest_problem_map as cpm\n            on cpm.fk_problem_id = p.id\n            and cpm.fk_contest_id = ?\n            and cpm.is_deleted = false\n            where pt.uid = ?\n            and cpm.id is null\n            order by random() limit 1;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "839e78e49ce08040d7d290b94413a5f64b7bd15ae578c4a05c1df6df1f398deb"
+}

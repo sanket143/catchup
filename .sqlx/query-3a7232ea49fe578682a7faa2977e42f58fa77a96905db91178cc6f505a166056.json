@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            select\n                id, level, duration, performance,\n                problem_rating_level_1,\n                problem_rating_level_2,\n                problem_rating_level_3,\n                problem_rating_level_4\n            from contest_problem_level as cpl\n            where level = ?;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "level",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "duration",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "performance",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "problem_rating_level_1",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "problem_rating_level_2",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "problem_rating_level_3",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "problem_rating_level_4",
+        "ordinal": 7,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "3a7232ea49fe578682a7faa2977e42f58fa77a96905db91178cc6f505a166056"
+}

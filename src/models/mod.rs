@@ -1,6 +1,11 @@
 use serde::Deserialize;
 
-#[derive(Debug)]
+pub mod contest;
+pub mod contest_problem_level;
+pub mod problem;
+pub mod user;
+
+#[derive(Debug, Clone)]
 pub struct User {
     username: String,
 }
@@ -8,6 +13,10 @@ pub struct User {
 impl User {
     pub fn new(username: String) -> Self {
         Self { username }
+    }
+
+    pub fn get_username(self) -> String {
+        self.username
     }
 }
 

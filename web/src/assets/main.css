@@ -22,3 +22,12 @@ a.disabled {
   cursor: initial;
   color: var(--color-text-disabled);
 }
+
+button {
+  color: var(--color-text-invert);
+  padding: 8px 10px;
+  background: var(--color-primary);
+  border-radius: 2px;
+  border-style: none;
+  cursor: pointer;
+}

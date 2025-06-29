@@ -10,7 +10,7 @@
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f3f3f3;
   --vt-c-black: #000000;
-  --vt-c-primary: #003e7c;
+  --vt-c-primary: #6457a6;
   --vt-c-off-primary: #9dacff;
 
   /* status colors */
@@ -22,16 +22,19 @@
   --vt-c-text-light-1: var(--vt-c-black);
   --vt-c-text-light-2: var(--vt-c-primary);
   --vt-c-text-light-3: var(--vt-c-gray);
-  --vt-c-text-dark-1: var(--vt-c-white);
+  --vt-c-text-light-1-invert: var(--vt-c-white);
 }
 
 /* semantic color variables for this project */
 :root {
+  --color-primary: var(--vt-c-primary);
   --color-background: var(--vt-c-white-soft);
   --color-background-soft: var(--vt-c-white);
   --color-text: var(--vt-c-text-light-1);
+  --color-text-invert: var(--vt-c-text-light-1-invert);
   --color-text-disabled: var(--vt-c-text-light-3);
   --color-text-link: var(--vt-c-text-light-2);
+  --color-text-primary: var(--vt-c-text-light-2);
 
   --section-gap: 20px;
 }
@@ -39,10 +42,14 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* will make dark theme later */
+    --color-primary: var(--vt-c-primary);
     --color-background: var(--vt-c-white-soft);
     --color-background-soft: var(--vt-c-white);
     --color-text: var(--vt-c-text-light-1);
+    --color-text-invert: var(--vt-c-text-light-1-invert);
+    --color-text-disabled: var(--vt-c-text-light-3);
     --color-text-link: var(--vt-c-text-light-2);
+    --color-text-primary: var(--vt-c-text-light-2);
 
     --section-gap: 20px;
   }
@@ -71,7 +78,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-input {
+input,
+button {
   font-family: 'JetBrains Mono';
 }
 

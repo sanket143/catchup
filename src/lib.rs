@@ -6,6 +6,7 @@ use tokio::sync::RwLock;
 
 mod db;
 mod handlers;
+mod macros;
 mod models;
 mod state;
 

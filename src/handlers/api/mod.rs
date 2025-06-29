@@ -19,10 +19,19 @@ pub fn handle_routes(
     };
 
     let sync_problems_api = api(String::from("sync-problems")).and_then(sync_problems::handler);
-    let list_contest_problems = api(String::from("contest"))
-        .and(warp::path("problems"))
+    let create_contest = api(String::from("contest"))
+        .and(warp::path("create"))
         .and(warp::body::json())
-        .and_then(contest::list_problems);
+        .and_then(contest::create);
+    let contest_count = api(String::from("contest"))
+        .and(warp::path("count"))
+        .and_then(contest::count);
+    let contest_current = api(String::from("contest"))
+        .and(warp::path("current"))
+        .and_then(contest::current);
 
-    sync_problems_api.or(list_contest_problems)
+    sync_problems_api
+        .or(create_contest)
+        .or(contest_count)
+        .or(contest_current)
 }

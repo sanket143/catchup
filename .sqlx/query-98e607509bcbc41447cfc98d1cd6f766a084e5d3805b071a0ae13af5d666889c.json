@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "select id, name, duration, created_on, started_on from contest where contest.created_for = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "duration",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_on",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "started_on",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "98e607509bcbc41447cfc98d1cd6f766a084e5d3805b071a0ae13af5d666889c"
+}
