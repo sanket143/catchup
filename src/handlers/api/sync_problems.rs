@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use serde_json::json;
 use sqlx::Row;
 use sqlx::{QueryBuilder, Sqlite};
@@ -7,8 +8,19 @@ use tokio::sync::RwLock;
 use warp::{reject::Rejection, reply::Reply};
 const BIND_LIMIT: usize = 32766;
 
+use crate::models::codeforces::Problem;
+use crate::state::AppState;
 use crate::warp_err;
-use crate::{models::Response, state::AppState};
+
+#[derive(Deserialize)]
+pub struct Response {
+    pub result: ResponseResult,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ResponseResult {
+    pub problems: Vec<Problem>,
+}
 
 pub async fn handler(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejection> {
     println!("Syncing Codeforces problems...");

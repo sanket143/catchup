@@ -19,6 +19,8 @@ pub fn handle_routes(
     };
 
     let sync_problems_api = api(String::from("sync-problems")).and_then(sync_problems::handler);
+
+    // contest api routes
     let create_contest = api(String::from("contest"))
         .and(warp::path("create"))
         .and(warp::body::json())
@@ -29,9 +31,16 @@ pub fn handle_routes(
     let contest_current = api(String::from("contest"))
         .and(warp::path("current"))
         .and_then(contest::current);
+    let contest_evaluate = api(String::from("contest"))
+        .and(warp::path("evaluate"))
+        .and(warp::body::json())
+        .and_then(contest::evaluate);
 
-    sync_problems_api
+    let routes = sync_problems_api
         .or(create_contest)
         .or(contest_count)
         .or(contest_current)
+        .or(contest_evaluate);
+
+    routes
 }

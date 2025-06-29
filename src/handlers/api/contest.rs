@@ -1,12 +1,17 @@
 use serde::Deserialize;
-use std::sync::Arc;
+use std::{collections::HashMap, ops::Deref, sync::Arc};
 use tokio::sync::RwLock;
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::{
     models::{
-        contest::{add_problem_in_contest, contest_count, create_contest, current_contest},
+        codeforces::Submission,
+        contest::{
+            add_problem_in_contest, add_problem_in_contest_by_id, contest_count, create_contest,
+            current_contest, get_contest_id, update_contest,
+        },
         contest_problem_level::get_problem_level_details,
+        contest_problem_map::update_contest_problem_map,
         problem_tag_group::get_random_problem_tag_group,
         user::create_user,
     },
@@ -17,6 +22,12 @@ use crate::{
 #[derive(Deserialize, Debug)]
 pub struct CreateContestInput {
     name: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct EvaluateContestInput {
+    #[serde(rename = "contestId")]
+    contest_id: i64,
 }
 
 pub async fn create(
@@ -56,10 +67,16 @@ pub async fn create(
     ]
     .iter()
     {
-        warp_err!(add_problem_in_contest(&mut *tx, &contest.id, rating, &problem_tag_group).await);
+        // warp_err!(add_problem_in_contest(&mut *tx, &contest.id, rating, &problem_tag_group).await);
+    }
+
+    for uid in ["CF/2117/B", "CF/2117/A", "CF/2112/C", "CF/2112/B"].iter() {
+        warp_err!(add_problem_in_contest_by_id(&mut *tx, &contest.id, uid).await);
     }
 
     warp_err!(tx.commit().await);
+
+    println!("{:?}", contest);
 
     Ok(warp::reply::json(&serde_json::json!({
         "id": contest.id
@@ -98,4 +115,70 @@ pub async fn current(state: Arc<RwLock<AppState>>) -> Result<impl Reply, Rejecti
     Ok(warp::reply::json(&serde_json::json!({
         "contest": contest
     })))
+}
+
+#[derive(Deserialize)]
+pub struct Response {
+    pub result: Vec<Submission>,
+}
+
+pub async fn evaluate(
+    state: Arc<RwLock<AppState>>,
+    input: EvaluateContestInput,
+) -> Result<impl Reply, Rejection> {
+    println!("Evaluating contest: {}", input.contest_id);
+    let state = &state.read().await;
+    let mut tx = warp_err!(state.db_pool.begin().await);
+
+    let contest = warp_err!(get_contest_id(&mut *tx, &input.contest_id).await);
+    let problems = warp_err!(contest.get_problems(&mut *tx).await);
+
+    let body: Response = warp_err!(
+        warp_err!(
+            ureq::get("https://codeforces.com/api/user.status?handle=sankxt143&from=1&count=500")
+                .call()
+        )
+        .body_mut()
+        .read_json()
+    );
+
+    let creation_time_threshold = (
+        contest.started_on,
+        contest.started_on + contest.duration * 60,
+    );
+
+    let mut problem_records = HashMap::new();
+
+    for submission in body.result.iter() {
+        if creation_time_threshold.0 <= submission.creation_time_seconds
+            && submission.creation_time_seconds <= creation_time_threshold.1
+        {
+            let problem = problems
+                .iter()
+                .find(|&x| x.uid == submission.problem.get_uid());
+
+            if let Some(problem) = problem {
+                problem_records
+                    .entry(problem.id)
+                    .or_insert((submission.creation_time_seconds, submission.verdict.clone()));
+            }
+        }
+
+        if submission.creation_time_seconds > creation_time_threshold.1 {
+            break;
+        }
+    }
+
+    for (problem_id, problem_submission_stat) in problem_records.iter() {
+        warp_err!(
+            update_contest_problem_map(&mut *tx, &contest.id, problem_id, problem_submission_stat)
+                .await
+        );
+    }
+
+    warp_err!(update_contest(&mut *tx, &contest.id, &true).await);
+    warp_err!(tx.commit().await);
+
+    println!("Evaluating contest: {}", input.contest_id);
+    Ok(warp::reply())
 }

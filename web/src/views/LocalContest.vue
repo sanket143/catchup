@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { ref, reactive, computed } from 'vue'
 
-let timer = reactive({ timeLeft: null })
+let timer = reactive({ timeLeftLabel: null, timeLeft: -1 })
 let contestCount = reactive({ value: -1 })
 let contestName = computed(() => `Local Contest #${contestCount.value}`)
 let currentContest = reactive({ contest: null })
@@ -10,24 +10,24 @@ let currentContest = reactive({ contest: null })
 function updateDisplay() {
   const contest = currentContest.contest
 
-  const timeLeft =
+  timer.timeLeft =
     contest.duration * 60 * 1000 > Date.now() - contest.started_on * 1000
       ? contest.duration * 60 * 1000 - (Date.now() - contest.started_on * 1000)
       : 0
 
-  const milliseconds = Math.floor((timeLeft % 1000) / 10)
-  const seconds = Math.floor((timeLeft / 1000) % 60)
-  const minutes = Math.floor((timeLeft / (1000 * 60)) % 60)
-  const hours = Math.floor(timeLeft / (1000 * 60 * 60))
+  const milliseconds = Math.floor((timer.timeLeft % 1000) / 10)
+  const seconds = Math.floor((timer.timeLeft / 1000) % 60)
+  const minutes = Math.floor((timer.timeLeft / (1000 * 60)) % 60)
+  const hours = Math.floor(timer.timeLeft / (1000 * 60 * 60))
 
   // Show milliseconds if less than 1 hour, otherwise show hours
   if (hours < 1) {
-    timer.timeLeft = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${milliseconds.toString().padStart(2, '0')}`
+    timer.timeLeftLabel = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${milliseconds.toString().padStart(2, '0')}`
   } else {
-    timer.timeLeft = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    timer.timeLeftLabel = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }
 
-  if (timer.timeLeft !== null) {
+  if (timer.timeLeftLabel !== null) {
     requestAnimationFrame(updateDisplay)
   }
 }
@@ -75,6 +75,18 @@ function createNewContest() {
     })
 }
 
+function evaluteContestSubmissions() {
+  axios({
+    method: 'post',
+    url: '/api/contest/evaluate',
+    data: {
+      contestId: currentContest.contest.id,
+    },
+  }).catch((err) => {
+    console.error(err)
+  })
+}
+
 getCurrentContest()
 getContestCount()
 </script>
@@ -85,7 +97,11 @@ getContestCount()
       <div class="section">
         <h3>{{ currentContest.contest.name }}</h3>
         <div>
-          <span class="label">Time left: </span> <span class="value">{{ timer.timeLeft }}</span>
+          <span class="label">Time left: </span>
+          <span class="value" v-if="timer.timeLeft > 0">
+            {{ timer.timeLeftLabel }}
+          </span>
+          <span class="value" v-else-if="timer.timeLeft == 0"> Completed </span>
         </div>
       </div>
       <div class="problems">
@@ -96,6 +112,12 @@ getContestCount()
           <div class="col-2">
             <a :href="problem.url" target="_blank">{{ problem.title }}</a>
           </div>
+        </div>
+      </div>
+
+      <div v-if="timer.timeLeft == 0 || true">
+        <div>
+          <button @click="evaluteContestSubmissions">Evaluate submissions</button>
         </div>
       </div>
     </div>
@@ -165,5 +187,9 @@ span.label {
 span.value {
   color: var(--color-text-primary);
   font-weight: bold;
+}
+
+button {
+  margin-top: 10px;
 }
 </style>

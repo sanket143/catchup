@@ -41,6 +41,24 @@ impl Contest {
     }
 }
 
+pub async fn get_contest_id<'e, E>(tx: E, contest_id: &i64) -> sqlx::Result<Contest>
+where
+    E: Executor<'e, Database = Sqlite>,
+{
+    let result = sqlx::query_as_unchecked!(
+        Contest,
+        r#"
+            select id, name, duration, created_on, started_on, fk_problem_tag_group_id from contest as c
+            where c.id = ?
+        "#,
+        contest_id
+    )
+    .fetch_one(tx)
+    .await?;
+
+    Ok(result)
+}
+
 pub async fn create_contest<'e, E>(
     tx: E,
     name: &str,
@@ -51,14 +69,15 @@ pub async fn create_contest<'e, E>(
 where
     E: Executor<'e, Database = Sqlite>,
 {
+    // hard coded for testing
     let result = sqlx::query_as_unchecked!(
         Contest,
         r#"
-            insert into contest (name, duration, created_for, fk_problem_tag_group_id)
-            values (?, ?, ?, ?) returning id, name, duration, created_on, started_on, fk_problem_tag_group_id;
+            insert into contest (name, duration, created_for, fk_problem_tag_group_id, started_on)
+            values (?, ?, ?, ?, 1750691608) returning id, name, duration, created_on, started_on, fk_problem_tag_group_id;
         "#,
         name,
-        duration,
+        6000000,
         username,
         problem_tag.id
     )
@@ -66,6 +85,24 @@ where
     .await?;
 
     Ok(result)
+}
+
+pub async fn update_contest<'e, E>(tx: E, contest_id: &i64, is_evaluated: &bool) -> sqlx::Result<()>
+where
+    E: Executor<'e, Database = Sqlite>,
+{
+    sqlx::query!(
+        r#"
+            update contest set is_evaluated = ?
+            where id = ?;
+        "#,
+        is_evaluated,
+        contest_id
+    )
+    .execute(tx)
+    .await?;
+
+    Ok(())
 }
 
 pub async fn contest_list(
@@ -129,6 +166,31 @@ where
         problem_rating,
         contest_id,
         problem_tag_group.id,
+    )
+    .execute(tx)
+    .await?;
+
+    Ok(())
+}
+
+// only for testing
+pub async fn add_problem_in_contest_by_id<'e, E>(
+    tx: E,
+    contest_id: &i64,
+    uid: &str,
+) -> sqlx::Result<()>
+where
+    E: Executor<'e, Database = Sqlite>,
+{
+    sqlx::query!(
+        r#"
+            insert into contest_problem_map(fk_contest_id, fk_problem_id)
+            select ?, p.id
+            from problem as p
+            where p.uid = ?;
+        "#,
+        contest_id,
+        uid,
     )
     .execute(tx)
     .await?;

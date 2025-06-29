@@ -1,5 +1,5 @@
 use crate::models::User;
-use sqlx::SqlitePool;
+use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::Filter;
@@ -10,7 +10,12 @@ pub struct AppState {
 }
 
 pub async fn create_app_state(database_url: &str) -> Result<AppState, sqlx::Error> {
-    let db_pool = SqlitePool::connect(database_url).await?;
+    let options = SqliteConnectOptions::new()
+        .filename(database_url)
+        .create_if_missing(true)
+        .journal_mode(sqlx::sqlite::SqliteJournalMode::Delete); // Explicitly set to DELETE mode
+
+    let db_pool = SqlitePool::connect_with(options).await?;
 
     Ok(AppState {
         user: None,
