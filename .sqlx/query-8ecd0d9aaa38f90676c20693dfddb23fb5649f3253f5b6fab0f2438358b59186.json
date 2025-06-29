@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            insert into contest (name, duration, created_for)\n            values (?, ?, ?) returning id, name, duration, created_on, started_on;\n        ",
+  "query": "\n            select id, name, duration, created_on, started_on, fk_problem_tag_group_id from contest\n            where (contest.started_on + (duration * 60)) >= ? and created_for = ? limit 1; \n        ",
   "describe": {
     "columns": [
       {
@@ -27,12 +27,18 @@
         "name": "started_on",
         "ordinal": 4,
         "type_info": "Integer"
+      },
+      {
+        "name": "fk_problem_tag_group_id",
+        "ordinal": 5,
+        "type_info": "Integer"
       }
     ],
     "parameters": {
-      "Right": 3
+      "Right": 2
     },
     "nullable": [
+      false,
       false,
       false,
       false,
@@ -40,5 +46,5 @@
       false
     ]
   },
-  "hash": "caf96811581471326eb5a0521e67d90fe2032dab2094d36202aa81a6fa9f8582"
+  "hash": "8ecd0d9aaa38f90676c20693dfddb23fb5649f3253f5b6fab0f2438358b59186"
 }

@@ -13,9 +13,6 @@ create table if not exists platform (
     name varchar(256) not null
 );
 
--- Add basic platforms
-insert into platform (uid, name) values ('codeforces', 'Codeforces') on conflict (uid) do nothing;
-
 create table if not exists problem (
     id integer primary key autoincrement,
     -- Useful when doing problem set sync, do not re-add in the DB if it already exists
@@ -31,12 +28,19 @@ create table if not exists problem (
     foreign key (fk_platform_id) references platform(id)
 );
 
+create table if not exists problem_tag_group (
+    id integer primary key autoincrement,
+    name varchar(256) not null unique
+);
+
 create table if not exists problem_tag (
     id integer primary key autoincrement,
     uid varchar(256) not null unique,
-    group_name varchar(256),
+    fk_problem_tag_group_id integer not null default 1,
     created_at timestamp defualt current_timestamp,
-    is_deleted boolean default false
+    is_deleted boolean default false,
+
+    foreign key (fk_problem_tag_group_id) references problem_tag_group(id)
 );
 
 create table if not exists problem_tag_map (
@@ -58,8 +62,12 @@ create table if not exists contest (
     created_on integer not null default (strftime('%s', 'now')),
     started_on integer not null default (strftime('%s', 'now')),
     created_for varchar(256) not null,
+    fk_problem_tag_group_id integer not null,
     is_evaluted boolean default false,
-    is_deleted boolean default false
+    is_deleted boolean default false,
+
+    foreign key (created_for) references user(username),
+    foreign key (fk_problem_tag_group_id) references problem_tag_group(id)
 );
 
 create table if not exists contest_problem_map (
@@ -86,6 +94,25 @@ create table if not exists contest_problem_level (
     problem_rating_level_4 integer not null
 );
 
+-- Seeding initial data
+-- Add basic platforms
+insert into platform (uid, name) values ('codeforces', 'Codeforces') on conflict (uid) do nothing;
+
+insert into problem_tag_group (
+    name
+) values
+    ('Implementation'),
+    ('DP'),
+    ('Graphs'),
+    ('Trees'),
+    ('Mathematics'),
+    ('Sortings'),
+    ('Bitmasks'),
+    ('Brute Force'),
+    ('DSA');
+
+-- Add contest problem level based on
+-- https://docs.google.com/spreadsheets/d/1gdD-syEpfy10Vz1f5UAm5eKiV_UAEdG-C4jrouN57bs/view
 insert into contest_problem_level (
     level,
     duration,
@@ -211,4 +238,39 @@ on conflict (level) do update set
     problem_rating_level_2 = EXCLUDED.problem_rating_level_3,
     problem_rating_level_3 = EXCLUDED.problem_rating_level_3,
     problem_rating_level_4 = EXCLUDED.problem_rating_level_4;
+
+-- Group these as you like
+insert into problem_tag (uid, fk_problem_tag_group_id) values
+    ('dsu', 1),
+    ('flows', 1),
+    ('2-sat', 1),
+    ('greedy', 1),
+    ('strings', 1),
+    ('interactive', 1),
+    ('two pointers', 1),
+    ('number theory', 1),
+    ('implementation', 1),
+    ('meet-in-the-middle', 1),
+    ('constructive algorithms', 1),
+    ('string suffix structures', 1),
+    ('dp', 2),
+    ('matrices', 2),
+    ('divide and conquer', 2),
+    ('graphs', 3),
+    ('shortest paths', 3),
+    ('dfs and similar', 3),
+    ('graph matchings', 3),
+    ('trees', 4),
+    ('fft', 5),
+    ('math', 5),
+    ('probabilities', 5),
+    ('combinatorics', 5),
+    ('sortings', 6),
+    ('schedules', 6),
+    ('binary search', 6),
+    ('bitmasks', 7),
+    ('brute force', 8),
+    ('data structures', 9)
+on conflict (uid) do update set
+    fk_problem_tag_group_id = EXCLUDED.fk_problem_tag_group_id;
 

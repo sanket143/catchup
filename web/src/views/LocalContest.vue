@@ -9,15 +9,16 @@ let currentContest = reactive({ contest: null })
 
 function updateDisplay() {
   const contest = currentContest.contest
-  const currentTime =
-    contest.duration * 1000000 > Date.now() - contest.started_on * 1000
-      ? contest.duration * 1000000 - (Date.now() - contest.started_on * 1000)
+
+  const timeLeft =
+    contest.duration * 60 * 1000 > Date.now() - contest.started_on * 1000
+      ? contest.duration * 60 * 1000 - (Date.now() - contest.started_on * 1000)
       : 0
 
-  const milliseconds = Math.floor((currentTime % 1000) / 10)
-  const seconds = Math.floor((currentTime / 1000) % 60)
-  const minutes = Math.floor((currentTime / (1000 * 60)) % 60)
-  const hours = Math.floor(currentTime / (1000 * 60 * 60))
+  const milliseconds = Math.floor((timeLeft % 1000) / 10)
+  const seconds = Math.floor((timeLeft / 1000) % 60)
+  const minutes = Math.floor((timeLeft / (1000 * 60)) % 60)
+  const hours = Math.floor(timeLeft / (1000 * 60 * 60))
 
   // Show milliseconds if less than 1 hour, otherwise show hours
   if (hours < 1) {
@@ -41,7 +42,6 @@ async function getContestCount() {
     },
   }).then((resp) => {
     contestCount.value = resp?.data?.count
-    console.log(contestCount.value)
   })
 }
 
@@ -55,7 +55,6 @@ async function getCurrentContest() {
     if (currentContest?.contest) {
       currentContest.contest.problems = resp.data?.problems
       updateDisplay()
-      console.log(timer)
     }
   })
 }
@@ -67,9 +66,13 @@ function createNewContest() {
     data: {
       name: contestName.value,
     },
-  }).catch((err) => {
-    console.error(err)
   })
+    .catch((err) => {
+      console.error(err)
+    })
+    .then(() => {
+      getCurrentContest()
+    })
 }
 
 getCurrentContest()

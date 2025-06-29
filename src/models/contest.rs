@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 use sqlx::{Executor, Sqlite, Transaction};
 
-use super::problem::Problem;
+use super::{problem::Problem, problem_tag_group::ProblemTagGroup};
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct Contest {
@@ -12,6 +12,7 @@ pub struct Contest {
     pub duration: i64,
     pub created_on: i64,
     pub started_on: i64,
+    pub fk_problem_tag_group_id: i64,
 }
 
 impl Contest {
@@ -45,19 +46,21 @@ pub async fn create_contest<'e, E>(
     name: &str,
     duration: &i64,
     username: &str,
+    problem_tag: &ProblemTagGroup,
 ) -> sqlx::Result<Contest>
 where
     E: Executor<'e, Database = Sqlite>,
 {
-    let result = sqlx::query_as!(
+    let result = sqlx::query_as_unchecked!(
         Contest,
         r#"
-            insert into contest (name, duration, created_for)
-            values (?, ?, ?) returning id, name, duration, created_on, started_on;
+            insert into contest (name, duration, created_for, fk_problem_tag_group_id)
+            values (?, ?, ?, ?) returning id, name, duration, created_on, started_on, fk_problem_tag_group_id;
         "#,
         name,
         duration,
-        username
+        username,
+        problem_tag.id
     )
     .fetch_one(tx)
     .await?;
@@ -71,7 +74,7 @@ pub async fn contest_list(
 ) -> sqlx::Result<Vec<Contest>> {
     let result = sqlx::query_as!(
         Contest,
-        "select id, name, duration, created_on, started_on from contest where contest.created_for = ?", created_for
+        "select id, name, duration, created_on, started_on, fk_problem_tag_group_id from contest where contest.created_for = ?", created_for
     )
     .fetch_all(&mut *tx)
     .await?;
@@ -85,7 +88,7 @@ where
 {
     let result = sqlx::query_as!(
         Contest,
-        "select id, name, duration, created_on, started_on from contest where contest.created_for = ?", created_for
+        "select id, name, duration, created_on, started_on, fk_problem_tag_group_id from contest where contest.created_for = ?", created_for
     )
     .fetch_all(tx)
     .await?;
@@ -97,7 +100,7 @@ pub async fn add_problem_in_contest<'e, E>(
     tx: E,
     contest_id: &i64,
     problem_rating: &i64,
-    problem_tag: &str,
+    problem_tag_group: &ProblemTagGroup,
 ) -> sqlx::Result<()>
 where
     E: Executor<'e, Database = Sqlite>,
@@ -106,7 +109,9 @@ where
         r#"
             insert into contest_problem_map(fk_contest_id, fk_problem_id)
             select ?, p.id
-            from problem_tag as pt
+            from problem_tag_group as ptg
+            join problem_tag as pt
+            on pt.fk_problem_tag_group_id = ptg.id
             join problem_tag_map as ptm
             on ptm.fk_problem_tag_id = pt.id
             join problem as p
@@ -116,14 +121,14 @@ where
             on cpm.fk_problem_id = p.id
             and cpm.fk_contest_id = ?
             and cpm.is_deleted = false
-            where pt.uid = ?
+            where ptg.id = ?
             and cpm.id is null
             order by random() limit 1;
         "#,
         contest_id,
         problem_rating,
         contest_id,
-        problem_tag,
+        problem_tag_group.id,
     )
     .execute(tx)
     .await?;
@@ -147,7 +152,7 @@ where
     let result = sqlx::query_as!(
         Contest,
         r#"
-            select id, name, duration, created_on, started_on from contest
+            select id, name, duration, created_on, started_on, fk_problem_tag_group_id from contest
             where (contest.started_on + (duration * 60)) >= ? and created_for = ? limit 1; 
         "#,
         epoch,

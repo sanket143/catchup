@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "select id, name, duration, created_on, started_on from contest where contest.created_for = ?",
+  "query": "select id, name, duration, created_on, started_on, fk_problem_tag_group_id from contest where contest.created_for = ?",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,11 @@
         "name": "started_on",
         "ordinal": 4,
         "type_info": "Integer"
+      },
+      {
+        "name": "fk_problem_tag_group_id",
+        "ordinal": 5,
+        "type_info": "Integer"
       }
     ],
     "parameters": {
@@ -37,8 +42,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "98e607509bcbc41447cfc98d1cd6f766a084e5d3805b071a0ae13af5d666889c"
+  "hash": "f4f98c16b546e1993f803b4cbdf5b0cf4dcc0a3a7ad0c0b1a812ea43c554b292"
 }

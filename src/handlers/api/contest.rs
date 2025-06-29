@@ -7,6 +7,7 @@ use crate::{
     models::{
         contest::{add_problem_in_contest, contest_count, create_contest, current_contest},
         contest_problem_level::get_problem_level_details,
+        problem_tag_group::get_random_problem_tag_group,
         user::create_user,
     },
     state::AppState,
@@ -34,18 +35,18 @@ pub async fn create(
 
     let user = warp_err!(create_user(&mut *tx, &user.get_username()).await);
     let contest_requirement = warp_err!(get_problem_level_details(&mut *tx, &user.level).await);
+    let problem_tag_group = warp_err!(get_random_problem_tag_group(&mut *tx).await);
 
     let contest = warp_err!(
         create_contest(
             &mut *tx,
             &input.name,
             &contest_requirement.duration,
-            &user.username
+            &user.username,
+            &problem_tag_group,
         )
         .await
     );
-
-    let problem_tag = "implementation";
 
     for rating in [
         contest_requirement.problem_rating_level_1,
@@ -55,7 +56,7 @@ pub async fn create(
     ]
     .iter()
     {
-        warp_err!(add_problem_in_contest(&mut *tx, &contest.id, rating, problem_tag).await);
+        warp_err!(add_problem_in_contest(&mut *tx, &contest.id, rating, &problem_tag_group).await);
     }
 
     warp_err!(tx.commit().await);
