@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import graphqlRequest from '@/client/graphqlRequest'
-import { ref, watch, reactive } from 'vue'
+import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 
-let loginDisabled = reactive({ value: false })
-let infoText = reactive({ value: '' })
-let username = ref(userStore.getUsername)
+const state = ref({
+  loginInfoText: '',
+  disableLogin: false,
+  username: userStore.getUsername,
+})
 
 const query = `
   mutation ($input: UserInput!) {
@@ -18,18 +20,42 @@ const query = `
   }
 `
 
-async function login() {
-  loginDisabled.value = true
+function disableLogin(status = true) {
+  state.value.disableLogin = status
+}
 
+function updateLoginInfo(status = true) {
+  state.value.loginInfoText = status
+    ? 'Logged in!'
+    : 'Something went wrong, check network request or console!'
+}
+
+function updateUsernameInStore(username: String) {
+  userStore.updateUsername(username)
+}
+
+function onUsernameChange(_event) {
+  disableLogin(false)
+}
+
+async function login() {
+  disableLogin()
+  const username = state.value.username
   const variables = {
     input: {
-      username: username.value,
+      username: username,
     },
   }
 
-  await graphqlRequest({ query, variables })
-  userStore.updateUsername(username.value)
-  infoText.value = 'Logged in!'
+  await graphqlRequest({ query, variables }).then(({ data: { data } }) => {
+    if (data?.createOrLoginUser?.username) {
+      updateUsernameInStore(username)
+      updateLoginInfo(true)
+    } else {
+      updateLoginInfo(false)
+      console.error('Invalid data format or reading data from incorrect path', data)
+    }
+  })
 }
 </script>
 
@@ -40,14 +66,18 @@ async function login() {
       <div class="settings">
         <div class="col-1">Codeforces username:</div>
         <div class="col-2">
-          <input v-model="username" placeholder="Your username (e.g. sankxt143)" />
+          <input
+            v-model="state.username"
+            @input="onUsernameChange"
+            placeholder="Your username (e.g. sankxt143)"
+          />
         </div>
       </div>
     </div>
     <div class="flex button-section">
-      <button :class="{ disabled: loginDisabled.value }" @click="login">Submit</button>
-      <div class="login-info" v-if="infoText.value.length > 0">
-        {{ infoText.value }}
+      <button :class="{ disabled: state.disableLogin }" @click="login">Submit</button>
+      <div class="login-info" v-if="state.loginInfoText?.length > 0 && state.disableLogin">
+        {{ state.loginInfoText }}
       </div>
     </div>
   </div>

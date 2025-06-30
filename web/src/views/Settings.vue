@@ -33,10 +33,10 @@ async function syncProblems() {
   <div class="container">
     <div class="settings-section">
       <div class="title">Accounts</div>
-      <div class="settings">
-        <div class="col-1">Codeforces:</div>
+      <div class="settings flex">
+        <div class="col-1">Codeforces username:</div>
         <div class="col-2">
-          <input v-model="username" placeholder="Your username (e.g. sankxt143)" />
+          <router-link to="/login">{{ username }}</router-link>
         </div>
       </div>
     </div>
@@ -67,17 +67,6 @@ async function syncProblems() {
 
 .settings {
   max-width: 550px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--section-gap);
-}
-
-.col-1 {
-  grid-column: 1;
-}
-
-.col-2 {
-  grid-column: 2 / span 3;
 }
 
 input {
