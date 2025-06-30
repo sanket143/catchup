@@ -11,7 +11,7 @@ const userStore = useUserStore()
     >
     <router-link to="/settings" active-class="active-link" class="nav-item">Settings</router-link>
     <div class="spacer"></div>
-    <router-link to="/settings" active-class="active-link" class="nav-item">{{
+    <router-link to="/login" active-class="active-link" class="nav-item">{{
       userStore.getUsername
     }}</router-link>
   </nav>

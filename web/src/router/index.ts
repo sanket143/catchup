@@ -19,6 +19,11 @@ const router = createRouter({
       name: 'settings',
       component: () => import('../views/Settings.vue'),
     },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/Login.vue'),
+    },
   ],
   linkActiveClass: 'active-link',
   linkExactActiveClass: 'exact-active-link',

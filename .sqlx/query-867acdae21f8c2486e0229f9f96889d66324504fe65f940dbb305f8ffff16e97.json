@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "insert into user (username) values (?) on conflict (username) do update set is_deleted = false returning id, username;",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "username",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "867acdae21f8c2486e0229f9f96889d66324504fe65f940dbb305f8ffff16e97"
+}

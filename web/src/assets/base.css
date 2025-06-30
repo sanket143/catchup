@@ -11,7 +11,7 @@
   --vt-c-white-soft: #f3f3f3;
   --vt-c-black: #000000;
   --vt-c-primary: #6457a6;
-  --vt-c-off-primary: #9dacff;
+  --vt-c-off-primary: #7b87cb;
 
   /* status colors */
   --vt-c-green: #005704;
@@ -28,6 +28,7 @@
 /* semantic color variables for this project */
 :root {
   --color-primary: var(--vt-c-primary);
+  --color-primary-off: var(--vt-c-off-primary);
   --color-background: var(--vt-c-white-soft);
   --color-background-soft: var(--vt-c-white);
   --color-text: var(--vt-c-text-light-1);
@@ -43,6 +44,7 @@
   :root {
     /* will make dark theme later */
     --color-primary: var(--vt-c-primary);
+    --color-primary-off: var(--vt-c-off-primary);
     --color-background: var(--vt-c-white-soft);
     --color-background-soft: var(--vt-c-white);
     --color-text: var(--vt-c-text-light-1);
@@ -81,6 +83,11 @@ body {
 input,
 button {
   font-family: 'JetBrains Mono';
+}
+
+.flex {
+  display: flex;
+  gap: 10px;
 }
 
 .spacer {

@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [vue(), vueDevTools()],
   server: {
     proxy: {
-      '/api': {
+      '/graphql': {
         target: 'http://localhost:3001',
       },
     },
