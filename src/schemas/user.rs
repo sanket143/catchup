@@ -1,21 +1,11 @@
-use juniper::{GraphQLInputObject, graphql_object};
-use sqlx::{Row, prelude::FromRow, sqlite::SqliteRow};
+use juniper::{FieldResult, GraphQLInputObject, graphql_object};
 
-use super::root::Context;
+use super::{contest::Contest, root::Context};
 
 #[derive(Debug)]
 pub struct User {
     pub id: i64,
     pub username: String,
-}
-
-impl<'r> FromRow<'r, SqliteRow> for User {
-    fn from_row(row: &'r SqliteRow) -> Result<Self, sqlx::Error> {
-        Ok(Self {
-            id: row.get("id"),
-            username: row.get("username"),
-        })
-    }
 }
 
 #[graphql_object(Context = Context)]
@@ -26,6 +16,21 @@ impl User {
 
     fn username(&self) -> &str {
         &self.username
+    }
+
+    async fn recent_contest(&self, ctx: &Context) -> FieldResult<Option<Contest>> {
+        let mut tx = ctx.db_pool.clone().begin().await?;
+        let result = sqlx::query_as!(
+            Contest,
+            "select id, name from contest where created_for = ? limit 1;",
+            self.username
+        )
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(result)
     }
 }
 

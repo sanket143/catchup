@@ -1,31 +1,22 @@
 <script setup lang="ts">
 import axios from 'axios'
 import { ref, watch } from 'vue'
+import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 
-let isSyncingProblems = ref(false)
+const appStore = useAppStore()
 const userStore = useUserStore()
-let username = ref(userStore.getUsername)
-
-watch(username, (val) => {
-  userStore.updateUsername(val)
-})
 
 async function syncProblems() {
-  if (isSyncingProblems.value) {
+  if (appStore.syncingProblemsInProgress) {
     return
   }
 
-  isSyncingProblems.value = true
-
-  await axios({
-    method: 'post',
-    url: '/api/sync-problems',
-  })
+  appStore.updateSyncingProblemStatus(true)
 
   setTimeout(() => {
-    isSyncingProblems.value = false
-  }, 1000)
+    appStore.updateSyncingProblemStatus(false)
+  }, 10000)
 }
 </script>
 
@@ -36,19 +27,21 @@ async function syncProblems() {
       <div class="settings flex">
         <div class="col-1">Codeforces username:</div>
         <div class="col-2">
-          <router-link to="/login">{{ username }}</router-link>
+          <router-link to="/login">{{ userStore.username }}</router-link>
         </div>
       </div>
     </div>
     <div class="settings-section">
       <div class="title">Codeforces</div>
       <div>
-        <a :class="{ disabled: isSyncingProblems }" @click="syncProblems">Sync problems</a>
+        <a :class="{ disabled: appStore.syncingProblemsInProgress }" @click="syncProblems"
+          >Sync problems</a
+        >
       </div>
       <div>
         <a>
           Sync user solved submissions (for
-          {{ userStore.getUsername ? userStore.getUsername : '\<codeforces-username>' }})</a
+          {{ userStore.username ? userStore.username : '\<codeforces-username>' }})</a
         >
       </div>
     </div>

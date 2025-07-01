@@ -1,10 +1,10 @@
 {
   "db_name": "SQLite",
-  "query": "select id, username from user where username = ?;",
+  "query": "select id as \"id!\", username from user where username = ? limit 1;",
   "describe": {
     "columns": [
       {
-        "name": "id",
+        "name": "id!",
         "ordinal": 0,
         "type_info": "Integer"
       },
@@ -22,5 +22,5 @@
       false
     ]
   },
-  "hash": "2762c27fc576f89cf6134bfab19097b0da7536cbf48be95fa84c26fac4295ebe"
+  "hash": "d514bb0b2811f3cc71d729d4e1a73977a6bc55f87791945ef4fb9b0bf753820f"
 }

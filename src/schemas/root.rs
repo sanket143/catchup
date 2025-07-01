@@ -18,9 +18,9 @@ impl QueryRoot {
     #[graphql(description = "Get Single user reference by user ID")]
     async fn user(username: String, context: &Context) -> FieldResult<User> {
         let mut tx = context.db_pool.clone().begin().await?;
-        let result = sqlx::query_as_unchecked!(
+        let result = sqlx::query_as!(
             User,
-            "select id, username from user where username = ?;",
+            r#"select id as "id!", username from user where username = ? limit 1;"#,
             username
         )
         .fetch_one(&mut *tx)
@@ -45,6 +45,8 @@ impl MutationRoot {
         )
         .fetch_one(&mut *tx)
         .await?;
+
+        tx.commit().await?;
 
         Ok(user)
     }

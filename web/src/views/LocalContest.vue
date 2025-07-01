@@ -1,11 +1,21 @@
 <script setup lang="ts">
 import axios from 'axios'
 import { ref, reactive, computed } from 'vue'
+import { useAppStore } from '@/stores/app'
+import { useUserStore } from '@/stores/user'
+import recentContestRequest from '@/client/contest/recent'
+
+const appStore = useAppStore()
+const userStore = useUserStore()
 
 let timer = reactive({ timeLeftLabel: null, timeLeft: -1 })
 let contestCount = reactive({ value: -1 })
-let contestName = computed(() => `Local Contest #${contestCount.value}`)
 let currentContest = reactive({ contest: null })
+const state = ref({
+  fetchingRecentContest: true,
+  recentContest: null,
+})
+const contestName = computed(() => `Local Contest #${state?.value?.recentContest.id || 0}`)
 
 function updateDisplay() {
   const contest = currentContest.contest
@@ -87,13 +97,26 @@ function evaluteContestSubmissions() {
   })
 }
 
-getCurrentContest()
-getContestCount()
+function getRecentContest() {
+  recentContestRequest()
+    .then((resp) => {
+      state.value.fetchingRecentContest = false
+      state.value.recentContest = resp
+    })
+    .catch((err) => {
+      console.error(err)
+    })
+}
+
+getRecentContest()
 </script>
 
 <template>
   <div class="container">
-    <div v-if="currentContest.contest != null">
+    <div v-if="!userStore.isLoggedIn">
+      <router-link to="/login">Login first, it's just a Codeforces username anyways</router-link>
+    </div>
+    <div v-else-if="currentContest.contest != null">
       <div class="section">
         <h3>{{ currentContest.contest.name }}</h3>
         <div>
@@ -121,12 +144,16 @@ getContestCount()
         </div>
       </div>
     </div>
-    <div v-else-if="contestCount.value > -1">
+    <div v-else-if="appStore.syncingProblemsInProgress">
+      <h3>Codeforces problem set syncing in progress...</h3>
+    </div>
+    <div v-else-if="!state.fetchingRecentContest">
       <h3>{{ contestName }}</h3>
       <div>
         <button @click="createNewContest">Start contest</button>
       </div>
     </div>
+    <!-- I'm aware, this will not make any difference if we refresh the page -->
     <div v-else>
       <h3>Loading contest details...</h3>
     </div>

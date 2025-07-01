@@ -8,7 +8,7 @@ const userStore = useUserStore()
 const state = ref({
   loginInfoText: '',
   disableLogin: false,
-  username: userStore.getUsername,
+  username: userStore.username,
 })
 
 const query = `
@@ -24,10 +24,20 @@ function disableLogin(status = true) {
   state.value.disableLogin = status
 }
 
-function updateLoginInfo(status = true) {
-  state.value.loginInfoText = status
-    ? 'Logged in!'
-    : 'Something went wrong, check network request or console!'
+enum LoginInfoStatus {
+  LOGGED_IN,
+  LOGGED_OUT,
+  INVALID_RESPONSE,
+}
+
+function updateLoginInfo(status: LoginInfoStatus = 'LOGGED_IN') {
+  const statusTextMap = {
+    [LoginInfoStatus.LOGGED_IN]: 'Logged in!',
+    [LoginInfoStatus.LOGGED_OUT]: 'Logged out!',
+    [LoginInfoStatus.BAD_RESPONSE]: 'Something went wrong, check network request or console!',
+  }
+
+  state.value.loginInfoText = statusTextMap[status]
 }
 
 function updateUsernameInStore(username: String) {
@@ -38,9 +48,20 @@ function onUsernameChange(_event) {
   disableLogin(false)
 }
 
+function logout() {
+  updateUsernameInStore('')
+  updateLoginInfo(LoginInfoStatus.LOGGED_OUT)
+}
+
 async function login() {
   disableLogin()
   const username = state.value.username
+
+  if (!username) {
+    logout()
+    return
+  }
+
   const variables = {
     input: {
       username: username,
@@ -48,11 +69,11 @@ async function login() {
   }
 
   await graphqlRequest({ query, variables }).then(({ data: { data } }) => {
-    if (data?.createOrLoginUser?.username) {
+    if (data?.createOrLoginUser?.username != undefined) {
       updateUsernameInStore(username)
-      updateLoginInfo(true)
+      updateLoginInfo(LoginInfoStatus.LOGGED_IN)
     } else {
-      updateLoginInfo(false)
+      updateLoginInfo(LoginInfoStatus.INVALID_RESPONSE)
       console.error('Invalid data format or reading data from incorrect path', data)
     }
   })

@@ -7,18 +7,32 @@ export const useUserStore = defineStore('user', {
     const username = cookie.parse(document.cookie)?.username || ''
 
     return {
-      username,
+      _username: username,
+      _isLoggedIn: username?.length > 0,
     }
   },
   getters: {
-    getUsername(state) {
-      return state.username
+    isLoggedIn(state) {
+      return state._isLoggedIn
+    },
+    username(state) {
+      return state._username
     },
   },
   actions: {
     updateUsername(username) {
-      this.username = username
-      document.cookie = 'username=' + username + ';'
+      this._username = username
+      this._isLoggedIn = username?.length > 0
+
+      let cookies = `username=${username || ''};`
+
+      if (!this._isLoggedIn) {
+        // logout by deleting the cookie
+        const pastDate = new Date(0).toUTCString()
+        let cookieString = `${cookies} expires=${pastDate};`
+      }
+
+      document.cookie = cookies
     },
   },
 })

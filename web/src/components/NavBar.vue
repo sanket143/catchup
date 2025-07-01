@@ -12,7 +12,7 @@ const userStore = useUserStore()
     <router-link to="/settings" active-class="active-link" class="nav-item">Settings</router-link>
     <div class="spacer"></div>
     <router-link to="/login" active-class="active-link" class="nav-item">{{
-      userStore.getUsername
+      userStore.isLoggedIn ? userStore.username : 'Login'
     }}</router-link>
   </nav>
 </template>

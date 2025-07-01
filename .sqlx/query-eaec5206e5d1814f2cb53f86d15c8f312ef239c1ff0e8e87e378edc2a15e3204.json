@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "select id, name from contest where created_for = ? limit 1;",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "eaec5206e5d1814f2cb53f86d15c8f312ef239c1ff0e8e87e378edc2a15e3204"
+}
