@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "insert into user (username) values (?) on conflict (username) do update set is_deleted = false returning id, username;",
+  "query": "insert into user (username) values (?) on conflict (username) do update set is_deleted = false returning id, username, level;",
   "describe": {
     "columns": [
       {
@@ -12,6 +12,11 @@
         "name": "username",
         "ordinal": 1,
         "type_info": "Text"
+      },
+      {
+        "name": "level",
+        "ordinal": 2,
+        "type_info": "Integer"
       }
     ],
     "parameters": {
@@ -19,8 +24,9 @@
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "867acdae21f8c2486e0229f9f96889d66324504fe65f940dbb305f8ffff16e97"
+  "hash": "8856871477eb8e0200e9b15b6d00eff2812f6ab50704fb85d6f5209b3d314bd5"
 }

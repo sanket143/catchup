@@ -6,7 +6,7 @@ pub struct ProblemTagGroup {
     pub name: String,
 }
 
-pub async fn get_random_problem_tag_group<'e, E>(tx: E) -> Result<ProblemTagGroup, sqlx::Error>
+pub async fn get_random<'e, E>(tx: E) -> Result<ProblemTagGroup, sqlx::Error>
 where
     E: Executor<'e, Database = Sqlite>,
 {

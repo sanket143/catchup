@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            insert into contest_problem_map(fk_contest_id, fk_problem_id)\n            select ?, p.id\n            from problem as p\n            where p.uid = ?;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "138d984305a145501a1addf6ae5e3e21571dbca98d267b25c261c50c541d4515"
+}

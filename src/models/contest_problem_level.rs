@@ -12,10 +12,7 @@ pub struct ContestProblemLevel {
     pub problem_rating_level_4: i64,
 }
 
-pub async fn get_problem_level_details<'e, E>(
-    tx: E,
-    level: &i64,
-) -> sqlx::Result<ContestProblemLevel>
+pub async fn get<'e, E>(tx: E, level: i64) -> sqlx::Result<ContestProblemLevel>
 where
     E: Executor<'e, Database = Sqlite>,
 {

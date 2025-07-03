@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "select id as \"id!\", username from user where username = ? limit 1;",
+  "query": "select id as \"id!\", username, level from user as u where u.username = ?",
   "describe": {
     "columns": [
       {
@@ -12,6 +12,11 @@
         "name": "username",
         "ordinal": 1,
         "type_info": "Text"
+      },
+      {
+        "name": "level",
+        "ordinal": 2,
+        "type_info": "Integer"
       }
     ],
     "parameters": {
@@ -19,8 +24,9 @@
     },
     "nullable": [
       true,
+      false,
       false
     ]
   },
-  "hash": "d514bb0b2811f3cc71d729d4e1a73977a6bc55f87791945ef4fb9b0bf753820f"
+  "hash": "d77e983b2786e22879e30443afc2aa628bb3897b46d142e62173ae206d3484fd"
 }

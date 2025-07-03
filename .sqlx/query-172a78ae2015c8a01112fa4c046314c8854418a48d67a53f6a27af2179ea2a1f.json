@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                select p.id, p.uid, p.title, p.url, p.rating\n                from contest as c\n                join contest_problem_map as cpm\n                on cpm.fk_contest_id = c.id\n                and cpm.is_deleted = false\n                join problem as p\n                on cpm.fk_problem_id = p.id\n                where c.id = ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "uid",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "url",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "rating",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "172a78ae2015c8a01112fa4c046314c8854418a48d67a53f6a27af2179ea2a1f"
+}

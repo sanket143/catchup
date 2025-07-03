@@ -1,11 +1,44 @@
 use juniper::{FieldResult, GraphQLInputObject, graphql_object};
+use sqlx::Executor;
 
-use super::{contest::Contest, root::Context};
+use super::contest::Contest;
+use crate::context::Context;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct User {
     pub id: i64,
+    pub level: i64,
     pub username: String,
+}
+
+impl User {
+    pub async fn by_username<'e, E>(tx: E, username: &str) -> sqlx::Result<Self>
+    where
+        E: Executor<'e, Database = sqlx::Sqlite>,
+    {
+        sqlx::query_as!(
+            Self,
+            r#"select id as "id!", username, level from user as u where u.username = ?"#,
+            username
+        )
+        .fetch_one(tx)
+        .await
+    }
+}
+
+impl User {
+    pub async fn create<'e, E>(tx: E, username: &str) -> sqlx::Result<Self>
+    where
+        E: Executor<'e, Database = sqlx::Sqlite>,
+    {
+        sqlx::query_as!(
+            Self,
+            "insert into user (username) values (?) on conflict (username) do update set is_deleted = false returning id, username, level;",
+            username
+        )
+        .fetch_one(tx)
+        .await
+    }
 }
 
 #[graphql_object(Context = Context)]

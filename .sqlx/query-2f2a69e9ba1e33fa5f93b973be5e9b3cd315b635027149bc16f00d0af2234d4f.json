@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "select id as \"id!\", username, level from user where username = ? limit 1;",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "username",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "level",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "2f2a69e9ba1e33fa5f93b973be5e9b3cd315b635027149bc16f00d0af2234d4f"
+}

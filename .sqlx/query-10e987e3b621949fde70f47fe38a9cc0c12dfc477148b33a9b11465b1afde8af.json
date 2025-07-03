@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            update contest_problem_map as cpm\n            set is_evaluated = true,\n            latest_submission_at = ?,\n            verdict = ?\n            where cpm.fk_contest_id = ? and cpm.fk_problem_id = ?;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "10e987e3b621949fde70f47fe38a9cc0c12dfc477148b33a9b11465b1afde8af"
+}

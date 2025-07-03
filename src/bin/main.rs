@@ -1,5 +1,5 @@
 use actix_web::{App, HttpServer, middleware::Logger, web::Data};
-use ketchup::{db::get_db_pool, handlers::register};
+use ketchup::{db::get_db_pool, handlers::register, schemas::root::create_schema};
 use std::sync::Arc;
 
 #[actix_web::main]
@@ -15,6 +15,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(pool.clone()))
+            .app_data(Data::new(create_schema()))
             .configure(register)
             .wrap(Logger::default())
     })

@@ -4,6 +4,7 @@ import { ref, reactive, computed } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 import recentContestRequest from '@/client/contest/recent'
+import createContestRequest from '@/client/contest/create'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
@@ -11,6 +12,7 @@ const userStore = useUserStore()
 let timer = reactive({ timeLeftLabel: null, timeLeft: -1 })
 let contestCount = reactive({ value: -1 })
 let currentContest = reactive({ contest: null })
+
 const state = ref({
   fetchingRecentContest: true,
   recentContest: null,
@@ -70,19 +72,13 @@ async function getCurrentContest() {
 }
 
 function createNewContest() {
-  axios({
-    method: 'post',
-    url: '/api/contest/create',
-    data: {
+  createContestRequest({
+    input: {
       name: contestName.value,
     },
+  }).then(() => {
+    getRecentContest()
   })
-    .catch((err) => {
-      console.error(err)
-    })
-    .then(() => {
-      getCurrentContest()
-    })
 }
 
 function evaluteContestSubmissions() {

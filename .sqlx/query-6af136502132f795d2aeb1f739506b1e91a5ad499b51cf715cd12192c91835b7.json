@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            insert into contest (name, duration, created_for, fk_problem_tag_group_id, started_on)\n            values (?, ?, ?, ?, 1750691608) returning id, name;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "6af136502132f795d2aeb1f739506b1e91a5ad499b51cf715cd12192c91835b7"
+}

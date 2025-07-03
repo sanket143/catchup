@@ -1,4 +1,3 @@
-import axios from 'axios'
 import graphqlRequest from '@/client/graphqlRequest'
 import { useUserStore } from '@/stores/user'
 

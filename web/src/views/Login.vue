@@ -68,8 +68,8 @@ async function login() {
     },
   }
 
-  await graphqlRequest({ query, variables }).then(({ data: { data } }) => {
-    if (data?.createOrLoginUser?.username != undefined) {
+  await graphqlRequest({ query, variables }).then(({ data }) => {
+    if (!data?.createOrLoginUser?.username) {
       updateUsernameInStore(username)
       updateLoginInfo(LoginInfoStatus.LOGGED_IN)
     } else {
