@@ -55,7 +55,7 @@ impl User {
         let mut tx = ctx.db_pool.clone().begin().await?;
         let result = sqlx::query_as!(
             Contest,
-            "select id, name from contest where created_for = ? limit 1;",
+            "select id, name from contest where created_for = ? order by created_on desc limit 1;",
             self.username
         )
         .fetch_optional(&mut *tx)

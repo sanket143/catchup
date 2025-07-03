@@ -6,7 +6,11 @@ use super::{
     contest::{Contest, CreateContestInput},
     user::{User, UserInput},
 };
-use crate::{context::Context, controllers, db::Pool};
+use crate::{
+    context::Context,
+    controllers::{self, problem_list::sync_problem_list},
+    db::Pool,
+};
 
 pub struct QueryRoot;
 
@@ -49,6 +53,11 @@ impl MutationRoot {
     async fn create_contest(ctx: &Context, input: CreateContestInput) -> FieldResult<Contest> {
         let contest = controllers::contest::create(ctx, &input).await?;
         Ok(contest)
+    }
+
+    #[graphql(description = "Create new local contest")]
+    async fn sync_problem_list(ctx: &Context) -> FieldResult<bool> {
+        Ok(sync_problem_list(ctx).await?)
     }
 }
 

@@ -3,7 +3,10 @@ use sqlx::{Row, prelude::FromRow, sqlite::SqliteRow};
 
 use crate::context::Context;
 
-use super::{problem::Problem, problem_tag_group::ProblemTagGroup, user::User};
+use super::{
+    contest_problem_map::ContestProblemMap, problem::Problem, problem_tag_group::ProblemTagGroup,
+    user::User,
+};
 
 #[derive(Debug)]
 pub struct Contest {
@@ -12,6 +15,21 @@ pub struct Contest {
 }
 
 impl Contest {
+    pub async fn by_id(ctx: &Context, contest_id: &i64) -> sqlx::Result<Self> {
+        let mut tx = ctx.db_pool.begin().await?;
+
+        sqlx::query_as!(
+            Self,
+            r#"
+                select c.id, c.name from contest as c
+                where c.id = ?
+            "#,
+            contest_id
+        )
+        .fetch_one(&mut *tx)
+        .await
+    }
+
     pub async fn create<'e, E>(
         tx: E,
         input: &CreateContestInput,
@@ -23,7 +41,7 @@ impl Contest {
         E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
     {
         // hard coded for testing
-        let result = sqlx::query_as!(
+        sqlx::query_as!(
             Self,
             r#"
                 insert into contest (name, duration, created_for, fk_problem_tag_group_id, started_on)
@@ -35,9 +53,7 @@ impl Contest {
             problem_tag.id
         )
         .fetch_one(tx)
-        .await?;
-
-        Ok(result)
+        .await
     }
 
     pub async fn add_problem_by_uid<'e, E>(&self, tx: E, problem_uid: &str) -> sqlx::Result<()>
@@ -65,6 +81,16 @@ impl Contest {
 impl Contest {
     fn id(&self) -> i32 {
         self.id as i32
+    }
+
+    fn name(&self) -> &String {
+        &self.name
+    }
+
+    async fn problems(&self, ctx: &Context) -> Vec<ContestProblemMap> {
+        ContestProblemMap::by_contest_id(ctx, &self.id)
+            .await
+            .expect("Unable to fetch contest problem map for a Contest")
     }
 }
 
