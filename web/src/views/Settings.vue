@@ -3,6 +3,7 @@ import axios from 'axios'
 import { ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
+import syncProblemSetRequest from '@/client/problem/sync'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
@@ -14,9 +15,9 @@ async function syncProblems() {
 
   appStore.updateSyncingProblemStatus(true)
 
-  setTimeout(() => {
+  syncProblemSetRequest().finaly(() => {
     appStore.updateSyncingProblemStatus(false)
-  }, 10000)
+  })
 }
 </script>
 

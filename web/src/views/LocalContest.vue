@@ -159,7 +159,7 @@ getRecentContest()
         <h3>Codeforces problem set syncing in progress...</h3>
       </div>
     </div>
-    <div class="container" :v-if="isRecentContestCompleted && state.contests?.length > 0">
+    <div class="container" v-if="isRecentContestCompleted && state.contests?.length > 0">
       <div>
         <h3>Past contests</h3>
       </div>

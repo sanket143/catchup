@@ -59,6 +59,7 @@ create table if not exists contest (
     id integer primary key autoincrement,
     name varchar(256) not null default 'Local Contest',
     duration integer not null default 120, -- minutes
+    level integer not null default 1,
     created_on integer not null default (strftime('%s', 'now')),
     started_on integer not null default (strftime('%s', 'now')),
     created_for varchar(256) not null,

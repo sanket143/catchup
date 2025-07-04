@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "update user set level = max(level + ?, 1) where username = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "74d8254665bc563de1d0f58c605097c4f010f18e99435215463c2e5b68f71541"
+}

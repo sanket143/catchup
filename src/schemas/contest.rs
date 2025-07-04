@@ -11,6 +11,7 @@ pub struct Contest {
     pub id: i64,
     pub name: String,
     pub duration: i64,
+    pub level: i64,
     pub created_on: i64,
     pub started_on: i64,
     pub created_for: String,
@@ -77,7 +78,7 @@ impl Contest {
             Self,
             r#"
                 select
-                    c.id, c.name, c.duration, c.created_on,
+                    c.id, c.name, c.duration, c.level, c.created_on,
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c
@@ -102,13 +103,14 @@ impl Contest {
         sqlx::query_as!(
             Self,
             r#"
-                insert into contest (name, duration, created_for, fk_problem_tag_group_id)
-                values (?, ?, ?, ?) returning id as "id!", name, duration,
+                insert into contest (name, duration, level, created_for, fk_problem_tag_group_id)
+                values (?, ?, ?, ?, ?) returning id as "id!", name, duration, level,
                 created_on, started_on, created_for, fk_problem_tag_group_id,
                 is_evaluated;
             "#,
             input.name,
             duration,
+            user.level,
             user.username,
             problem_tag.id
         )

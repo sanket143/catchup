@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n                select\n                    c.id, c.name, c.duration, c.created_on,\n                    c.started_on, c.created_for, c.fk_problem_tag_group_id,\n                    c.is_evaluated\n                from contest as c\n                where c.created_for = ?\n                order by created_on desc\n                limit 1;\n            ",
+  "query": "\n                select\n                    c.id, c.name, c.duration, c.level, c.created_on,\n                    c.started_on, c.created_for, c.fk_problem_tag_group_id,\n                    c.is_evaluated\n                from contest as c\n                where c.created_for = ?\n                order by created_on desc\n                limit 1;\n            ",
   "describe": {
     "columns": [
       {
@@ -19,28 +19,33 @@
         "type_info": "Integer"
       },
       {
-        "name": "created_on",
+        "name": "level",
         "ordinal": 3,
         "type_info": "Integer"
       },
       {
-        "name": "started_on",
+        "name": "created_on",
         "ordinal": 4,
         "type_info": "Integer"
       },
       {
-        "name": "created_for",
+        "name": "started_on",
         "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_for",
+        "ordinal": 6,
         "type_info": "Text"
       },
       {
         "name": "fk_problem_tag_group_id",
-        "ordinal": 6,
+        "ordinal": 7,
         "type_info": "Integer"
       },
       {
         "name": "is_evaluated",
-        "ordinal": 7,
+        "ordinal": 8,
         "type_info": "Bool"
       }
     ],
@@ -55,8 +60,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "1682bd6181b8195e470fad39225bffb1af4326159f51ebf0eba1c884bf853dbf"
+  "hash": "b51417e31dcbcded9f0c12688951b7a980520b0213c7c884e14b788f9a830a96"
 }

@@ -75,7 +75,7 @@ impl User {
             Contest,
             r#"
                 select
-                    c.id, c.name, c.duration, c.created_on,
+                    c.id, c.name, c.duration, c.level, c.created_on,
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c
@@ -97,7 +97,7 @@ impl User {
             Contest,
             r#"
                 select
-                    c.id, c.name, c.duration, c.created_on,
+                    c.id, c.name, c.duration, c.level, c.created_on,
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c

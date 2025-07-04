@@ -1,10 +1,10 @@
 {
   "db_name": "SQLite",
-  "query": "\n                insert into contest (name, duration, created_for, fk_problem_tag_group_id)\n                values (?, ?, ?, ?) returning id as \"id!\", name, duration,\n                created_on, started_on, created_for, fk_problem_tag_group_id,\n                is_evaluated;\n            ",
+  "query": "\n                select\n                    c.id, c.name, c.duration, c.level, c.created_on,\n                    c.started_on, c.created_for, c.fk_problem_tag_group_id,\n                    c.is_evaluated\n                from contest as c\n                where c.id = ?\n            ",
   "describe": {
     "columns": [
       {
-        "name": "id!",
+        "name": "id",
         "ordinal": 0,
         "type_info": "Integer"
       },
@@ -19,36 +19,42 @@
         "type_info": "Integer"
       },
       {
-        "name": "created_on",
+        "name": "level",
         "ordinal": 3,
         "type_info": "Integer"
       },
       {
-        "name": "started_on",
+        "name": "created_on",
         "ordinal": 4,
         "type_info": "Integer"
       },
       {
-        "name": "created_for",
+        "name": "started_on",
         "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_for",
+        "ordinal": 6,
         "type_info": "Text"
       },
       {
         "name": "fk_problem_tag_group_id",
-        "ordinal": 6,
+        "ordinal": 7,
         "type_info": "Integer"
       },
       {
         "name": "is_evaluated",
-        "ordinal": 7,
+        "ordinal": 8,
         "type_info": "Bool"
       }
     ],
     "parameters": {
-      "Right": 4
+      "Right": 1
     },
     "nullable": [
-      true,
+      false,
+      false,
       false,
       false,
       false,
@@ -58,5 +64,5 @@
       false
     ]
   },
-  "hash": "46a041887612842a59f42f12fb66a6208aa35c75924a754df720172243e062b4"
+  "hash": "2a055bf39ca35ef377cbd0d7520748a6f80580ae8a1a52118ed0140d4c2a5d90"
 }
