@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            insert into contest (name, duration, created_for, fk_problem_tag_group_id, started_on)\n            values (?, ?, ?, ?, 1750691608)\n            returning id, name, duration, created_on, started_on,\n            created_for, fk_problem_tag_group_id, is_evaluated;\n        ",
+  "query": "\n                select\n                    c.id, c.name, c.duration, c.created_on,\n                    c.started_on, c.created_for, c.fk_problem_tag_group_id,\n                    c.is_evaluated\n                from contest as c\n                where c.created_for = ?\n                order by created_on desc;\n            ",
   "describe": {
     "columns": [
       {
@@ -45,10 +45,10 @@
       }
     ],
     "parameters": {
-      "Right": 4
+      "Right": 1
     },
     "nullable": [
-      true,
+      false,
       false,
       false,
       false,
@@ -58,5 +58,5 @@
       false
     ]
   },
-  "hash": "586a550796d442573f6889b4eb907f6d19a0a25a13986179e376d9fe5a12e743"
+  "hash": "211ea2bba7592ea1b35f0aff8c55f8301c6820ee21d7b2a13e17d0057d08bd09"
 }

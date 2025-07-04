@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                    select c.id from problem_tag_group as ptg\n                    join contest as c\n                    on c.fk_problem_tag_group_id = ptg.id\n                    and c.is_deleted = false\n                    where ptg.id = ?\n                    and c.created_for = ?\n                ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "87325ef00341e04826e56d3919346adad73d9129a35e57fdff359f87d07d1742"
+}

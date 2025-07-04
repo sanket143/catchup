@@ -1,5 +1,5 @@
 use actix_web::{App, HttpServer, middleware::Logger, web::Data};
-use ketchup::{db::get_db_pool, handlers::register, schemas::root::create_schema};
+use catchup::{db::get_db_pool, handlers::register, schemas::root::create_schema};
 use std::sync::Arc;
 
 #[actix_web::main]

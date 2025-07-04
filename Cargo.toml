@@ -1,5 +1,5 @@
 [package]
-name = "ketchup"
+name = "catchup"
 version = "0.1.0"
 edition = "2024"
 
@@ -17,5 +17,5 @@ ureq = { version = "3.0", features = ["json"] }
 warp = "0.3"
 
 [[bin]]
-name = "ketchup"
+name = "catchup"
 path = "src/bin/main.rs"

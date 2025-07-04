@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                select id, name from problem_tag_group\n                where id = ? limit 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "2f8763d030c3103bd4fe78b429b37de24cf02b5cc21790e49bb3ce42e0eba60c"
+}

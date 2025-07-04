@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "select id as \"id!\", name from problem_tag_group;",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "23ae1fa0dc68232bd5e5d6e080dafcdca95dc640ce5e642bb79788ceff37bce7"
+}
