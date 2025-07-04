@@ -39,6 +39,21 @@ impl User {
         .fetch_one(tx)
         .await
     }
+
+    pub async fn update_level<'e, E>(&self, tx: E, level_offset: &i64) -> sqlx::Result<()>
+    where
+        E: Executor<'e, Database = sqlx::Sqlite>,
+    {
+        sqlx::query!(
+            "update user set level = max(level + ?, 1) where username = ?",
+            level_offset,
+            self.username
+        )
+        .execute(tx)
+        .await?;
+
+        Ok(())
+    }
 }
 
 #[graphql_object(Context = Context)]

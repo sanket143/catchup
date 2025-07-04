@@ -8,7 +8,7 @@ import { ref, computed } from 'vue'
 
 const state = ref({
   problemTagGroups: [],
-  user: {},
+  user: null,
 })
 
 const computedState = computed(() => {
@@ -17,8 +17,8 @@ const computedState = computed(() => {
   const isSolvedProblem = (p) => p.verdict == 'OK'
 
   return {
-    overallLevel: (user.level || 0).toString(),
-    totalContests: (contests.length || 0).toString(),
+    overallLevel: user?.level?.toString(),
+    totalContests: contests?.length?.toString(),
     totalProblemsSolved: contests
       ?.reduce((result, { problems }) => result + problems?.filter(isSolvedProblem).length, 0)
       .toString(),
@@ -50,7 +50,7 @@ fetchUserDashboardDetails()
 </script>
 
 <template>
-  <div class="stat-cards">
+  <div class="stat-cards" v-if="state?.user">
     <StatCard title="Total contests" :count="computedState.totalContests" />
     <StatCard title="Overall level" :count="computedState.overallLevel" />
     <StatCard title="Total problems solved" :count="computedState.totalProblemsSolved" />

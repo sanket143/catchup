@@ -175,4 +175,22 @@ impl Contest {
 
         Ok(())
     }
+
+    pub async fn mark_as_evaluate<'e, E>(&self, tx: E) -> sqlx::Result<()>
+    where
+        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+    {
+        sqlx::query!(
+            r#"
+                update contest as c
+                set is_evaluated = true
+                where c.id = ?;
+            "#,
+            self.id,
+        )
+        .execute(tx)
+        .await?;
+
+        Ok(())
+    }
 }

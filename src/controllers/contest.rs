@@ -60,6 +60,14 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Resu
     let contest_id = input.contest_id as i64;
     let contest = Contest::by_id(ctx, &contest_id).await?;
 
+    // if contest is already evaluated, then no need to proceed further
+    if contest.is_evaluated {
+        return Ok(contest);
+    }
+
+    let user = ctx.user.as_ref().unwrap();
+    let mut tx = ctx.db_pool.begin().await?;
+
     // TODO: Should be handled by single sql query to get problems by problem ids
     let contest_problem_map = ContestProblemMap::by_contest_id(ctx, &contest_id).await?;
     let problems = stream::iter(contest_problem_map)
@@ -101,16 +109,26 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Resu
         }
     }
 
+    let mut level_offset = 1;
     for (problem_id, problem_submission_stat) in problem_records.iter() {
+        if problem_submission_stat.1 != "OK" {
+            level_offset = -1;
+        }
+
         // TODO: should be doable using contest_problem_map.evaluate(...) like API
         ContestProblemMap::update_evaluation_stats(
-            ctx,
+            &mut *tx,
             &contest.id,
             problem_id,
             problem_submission_stat,
         )
         .await?;
     }
+
+    contest.mark_as_evaluate(&mut *tx).await?;
+    user.update_level(&mut *tx, &level_offset).await?;
+
+    tx.commit().await?;
 
     Ok(contest)
 }

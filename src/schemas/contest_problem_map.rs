@@ -70,12 +70,15 @@ impl ContestProblemMap {
 
     // TODO: Should have a &self signature and should not be dependent on contest_id
     // and problem_id
-    pub async fn update_evaluation_stats(
-        ctx: &Context,
+    pub async fn update_evaluation_stats<'e, E>(
+        tx: E,
         contest_id: &i64,
         problem_id: &i64,
         stat: &(i64, String),
-    ) -> sqlx::Result<()> {
+    ) -> sqlx::Result<()>
+    where
+        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+    {
         sqlx::query!(
             r#"
             update contest_problem_map as cpm
@@ -89,7 +92,7 @@ impl ContestProblemMap {
             contest_id,
             problem_id
         )
-        .execute(&*ctx.db_pool)
+        .execute(tx)
         .await?;
 
         Ok(())
