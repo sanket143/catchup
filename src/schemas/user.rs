@@ -51,8 +51,11 @@ impl User {
         &self.username
     }
 
+    fn level(&self) -> i32 {
+        self.level as i32
+    }
+
     async fn recent_contest(&self, ctx: &Context) -> FieldResult<Option<Contest>> {
-        let mut tx = ctx.db_pool.clone().begin().await?;
         let result = sqlx::query_as!(
             Contest,
             r#"
@@ -67,7 +70,28 @@ impl User {
             "#,
             self.username
         )
-        .fetch_optional(&mut *tx)
+        .fetch_optional(&*ctx.db_pool)
+        .await?;
+
+        Ok(result)
+    }
+
+    async fn contests(&self, ctx: &Context) -> FieldResult<Vec<Contest>> {
+        let mut tx = ctx.db_pool.clone().begin().await?;
+        let result = sqlx::query_as!(
+            Contest,
+            r#"
+                select
+                    c.id, c.name, c.duration, c.created_on,
+                    c.started_on, c.created_for, c.fk_problem_tag_group_id,
+                    c.is_evaluated
+                from contest as c
+                where c.created_for = ?
+                order by created_on desc;
+            "#,
+            self.username
+        )
+        .fetch_all(&mut *tx)
         .await?;
 
         tx.commit().await?;

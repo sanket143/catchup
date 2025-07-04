@@ -99,17 +99,16 @@ impl Contest {
     where
         E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
     {
-        // hard coded for testing
         sqlx::query_as!(
             Self,
             r#"
-                insert into contest (name, duration, created_for, fk_problem_tag_group_id, started_on)
-                values (?, ?, ?, ?, 1750691608) returning id as "id!", name, duration,
+                insert into contest (name, duration, created_for, fk_problem_tag_group_id)
+                values (?, ?, ?, ?) returning id as "id!", name, duration,
                 created_on, started_on, created_for, fk_problem_tag_group_id,
                 is_evaluated;
             "#,
             input.name,
-            6000000,
+            duration,
             user.username,
             problem_tag.id
         )

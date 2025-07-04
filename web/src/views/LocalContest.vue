@@ -123,9 +123,12 @@ getRecentContest()
           </div>
         </div>
 
-        <div v-if="timer.timeLeft == 0 || true">
+        <div v-if="timer.timeLeft == 0 || true" class="flex">
           <div>
             <button @click="evaluteContestSubmissions">Evaluate submissions</button>
+          </div>
+          <div>
+            <button @click="createNewContest">Start new contest</button>
           </div>
         </div>
       </div>

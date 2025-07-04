@@ -1,17 +1,32 @@
 <script setup lang="ts">
-const data = []
-const hasData = data.length > 0
+import { computed } from 'vue'
+const { problemTagGroups } = defineProps({
+  problemTagGroups: Array,
+})
+
+const hasData = computed(() => problemTagGroups.length > 0)
 </script>
 
 <template>
   <div class="container">
     <div class="header">
       <div class="col-1">Topic</div>
-      <div class="col-2">Level</div>
-      <div class="col-3">No of solved problems</div>
+      <div class="col-2">No of solved problems</div>
     </div>
-    <div class="content" v-if="hasData">
-      <div class="col-1">Dynamic Programming</div>
+    <div class="content" v-if="hasData" v-for="tag in problemTagGroups">
+      <div class="col-1">{{ tag.name }}</div>
+      <div class="col-2">
+        {{
+          tag.contests.reduce((result, val) => {
+            result += val.problems.reduce(
+              (result, { verdict }) => result + (verdict == 'OK' ? 1 : 0),
+              0,
+            )
+
+            return result
+          }, 0)
+        }}
+      </div>
     </div>
     <div class="content" v-else>
       <div class="col-1">No data</div>

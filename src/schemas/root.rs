@@ -2,6 +2,7 @@ use juniper::{EmptySubscription, FieldResult, RootNode, graphql_object};
 
 use super::{
     contest::{Contest, CreateContestInput, EvaluateContestInput},
+    problem_tag_group::ProblemTagGroup,
     user::{User, UserInput},
 };
 use crate::{
@@ -13,18 +14,22 @@ pub struct QueryRoot;
 
 #[graphql_object(Context = Context)]
 impl QueryRoot {
-    #[graphql(description = "Get Single user reference by user ID")]
-    async fn user(username: String, context: &Context) -> FieldResult<User> {
-        let mut tx = context.db_pool.clone().begin().await?;
-        let result = sqlx::query_as!(
-            User,
-            r#"select id as "id!", username, level from user where username = ? limit 1;"#,
-            username
-        )
-        .fetch_one(&mut *tx)
-        .await?;
+    #[graphql(description = "Get currently logged in user")]
+    async fn user(ctx: &Context) -> FieldResult<&User> {
+        let user = ctx.user.as_ref().expect("User not logged in");
+        Ok(user)
+    }
 
-        tx.commit().await?;
+    #[graphql(
+        description = "List of all the problem tag groups, basically a group of Codeforces topics. Refer to migration file in the codebase for list of tag groups."
+    )]
+    async fn problem_tag_groups(ctx: &Context) -> FieldResult<Vec<ProblemTagGroup>> {
+        let result = sqlx::query_as!(
+            ProblemTagGroup,
+            r#"select id as "id!", name from problem_tag_group;"#,
+        )
+        .fetch_all(&*ctx.db_pool)
+        .await?;
 
         Ok(result)
     }
@@ -58,7 +63,7 @@ impl MutationRoot {
         Ok(contest)
     }
 
-    #[graphql(description = "Create new local contest")]
+    #[graphql(description = "Sync problem list from Codeforces")]
     async fn sync_problem_list(ctx: &Context) -> FieldResult<bool> {
         Ok(sync_problem_list(ctx).await?)
     }

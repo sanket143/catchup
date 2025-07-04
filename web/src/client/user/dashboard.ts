@@ -4,22 +4,13 @@ const query = `
   query getCurrentUser {
     user {
       id
+      level
       username
-      recentContest {
+      contests {
         id
-        name
         problems {
           id
-          latestSubmissionAt
-          isEvaluated
           verdict
-          problem {
-            id
-            uid
-            url
-            title
-            rating
-          }
         }
       }
     }
