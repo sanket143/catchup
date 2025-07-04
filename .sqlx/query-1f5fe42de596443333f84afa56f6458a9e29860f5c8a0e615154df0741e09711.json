@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                select p.id, p.uid, p.title, p.url, p.rating\n                from problem as p\n                where p.id = ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "uid",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "url",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "rating",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "1f5fe42de596443333f84afa56f6458a9e29860f5c8a0e615154df0741e09711"
+}

@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                insert into contest (name, duration, created_for, fk_problem_tag_group_id, started_on)\n                values (?, ?, ?, ?, 1750691608) returning id as \"id!\", name, duration,\n                created_on, started_on, created_for, fk_problem_tag_group_id,\n                is_evaluated;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "duration",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_on",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "started_on",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_for",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "fk_problem_tag_group_id",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "is_evaluated",
+        "ordinal": 7,
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "228d714c2a072652194116eef43cfcf1d7e37be0aeaa319a3f862e18d0838370"
+}

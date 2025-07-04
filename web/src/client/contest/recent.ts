@@ -9,6 +9,20 @@ const query = `
       username
       recentContest {
         id
+        name
+        problems {
+          id
+          latestSubmissionAt
+          isEvaluated
+          verdict
+          problem {
+            id
+            uid
+            url
+            title
+            rating
+          }
+        }
       }
     }
   }

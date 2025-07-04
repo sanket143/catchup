@@ -63,7 +63,7 @@ create table if not exists contest (
     started_on integer not null default (strftime('%s', 'now')),
     created_for varchar(256) not null,
     fk_problem_tag_group_id integer not null,
-    is_evaluated boolean default false,
+    is_evaluated boolean not null default false,
     is_deleted boolean default false,
 
     foreign key (created_for) references user(username),

@@ -1,7 +1,4 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
-use serde::Serialize;
-use sqlx::{Executor, Sqlite, Transaction};
+use sqlx::{Executor, Sqlite};
 
 use crate::schemas::contest::Contest;
 
@@ -40,7 +37,11 @@ where
     let result = sqlx::query_as_unchecked!(
         Contest,
         r#"
-            select id, name from contest as c
+            select
+                c.id, c.name, c.duration, c.created_on,
+                c.started_on, c.created_for, c.fk_problem_tag_group_id,
+                c.is_evaluated
+            from contest as c
             where c.id = ?
         "#,
         contest_id
@@ -66,7 +67,9 @@ where
         Contest,
         r#"
             insert into contest (name, duration, created_for, fk_problem_tag_group_id, started_on)
-            values (?, ?, ?, ?, 1750691608) returning id, name;
+            values (?, ?, ?, ?, 1750691608)
+            returning id, name, duration, created_on, started_on,
+            created_for, fk_problem_tag_group_id, is_evaluated;
         "#,
         name,
         6000000,

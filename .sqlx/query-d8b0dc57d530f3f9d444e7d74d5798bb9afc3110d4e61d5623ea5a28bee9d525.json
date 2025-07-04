@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                select\n                    c.id, c.name, c.duration, c.created_on,\n                    c.started_on, c.created_for, c.fk_problem_tag_group_id,\n                    c.is_evaluated\n                from contest as c\n                where c.id = ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "duration",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_on",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "started_on",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_for",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "fk_problem_tag_group_id",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "is_evaluated",
+        "ordinal": 7,
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "d8b0dc57d530f3f9d444e7d74d5798bb9afc3110d4e61d5623ea5a28bee9d525"
+}

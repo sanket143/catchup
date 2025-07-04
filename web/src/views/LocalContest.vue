@@ -5,26 +5,26 @@ import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 import recentContestRequest from '@/client/contest/recent'
 import createContestRequest from '@/client/contest/create'
+import evaluateContestRequest from '@/client/contest/evaluate'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
 
 let timer = reactive({ timeLeftLabel: null, timeLeft: -1 })
-let contestCount = reactive({ value: -1 })
-let currentContest = reactive({ contest: null })
 
 const state = ref({
   fetchingRecentContest: true,
   recentContest: null,
 })
-const contestName = computed(() => `Local Contest #${state?.value?.recentContest.id || 0}`)
+
+const contestName = computed(() => `Local Contest #${state?.value?.recentContest?.id || 0}`)
 
 function updateDisplay() {
-  const contest = currentContest.contest
+  const contest = state.value.recentContest
 
   timer.timeLeft =
-    contest.duration * 60 * 1000 > Date.now() - contest.started_on * 1000
-      ? contest.duration * 60 * 1000 - (Date.now() - contest.started_on * 1000)
+    contest?.duration * 60 * 1000 > Date.now() - contest?.started_on * 1000
+      ? contest?.duration * 60 * 1000 - (Date.now() - contest?.started_on * 1000)
       : 0
 
   const milliseconds = Math.floor((timer.timeLeft % 1000) / 10)
@@ -44,33 +44,6 @@ function updateDisplay() {
   }
 }
 
-// fetch numnber of contests, to have the default name of the contest
-async function getContestCount() {
-  axios({
-    method: 'post',
-    url: '/api/contest/count',
-    data: {
-      contestId: 1,
-    },
-  }).then((resp) => {
-    contestCount.value = resp?.data?.count
-  })
-}
-
-async function getCurrentContest() {
-  axios({
-    method: 'post',
-    url: '/api/contest/current',
-  }).then((resp) => {
-    currentContest.contest = resp.data?.contest
-
-    if (currentContest?.contest) {
-      currentContest.contest.problems = resp.data?.problems
-      updateDisplay()
-    }
-  })
-}
-
 function createNewContest() {
   createContestRequest({
     input: {
@@ -82,22 +55,31 @@ function createNewContest() {
 }
 
 function evaluteContestSubmissions() {
-  axios({
-    method: 'post',
-    url: '/api/contest/evaluate',
-    data: {
-      contestId: currentContest.contest.id,
+  if (!state.value.recentContest) {
+    console.error('No contest to evaluate')
+    return
+  }
+
+  evaluateContestRequest({
+    input: {
+      contestId: state.value.recentContest.id,
     },
-  }).catch((err) => {
-    console.error(err)
   })
+    .then((resp) => {
+      getRecentContest()
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
 
 function getRecentContest() {
+  state.value.fetchingRecentContest = true
   recentContestRequest()
     .then((resp) => {
       state.value.fetchingRecentContest = false
-      state.value.recentContest = resp
+      state.value.recentContest = resp?.user?.recentContest
+      updateDisplay()
     })
     .catch((err) => {
       console.error(err)
@@ -112,46 +94,51 @@ getRecentContest()
     <div v-if="!userStore.isLoggedIn">
       <router-link to="/login">Login first, it's just a Codeforces username anyways</router-link>
     </div>
-    <div v-else-if="currentContest.contest != null">
-      <div class="section">
-        <h3>{{ currentContest.contest.name }}</h3>
-        <div>
-          <span class="label">Time left: </span>
-          <span class="value" v-if="timer.timeLeft > 0">
-            {{ timer.timeLeftLabel }}
-          </span>
-          <span class="value" v-else-if="timer.timeLeft == 0"> Completed </span>
-        </div>
-      </div>
-      <div class="problems">
-        <div class="problem" v-for="problem in currentContest.contest?.problems">
-          <div class="col-1">
-            <a :href="problem.url" target="_blank">{{ problem.uid }}</a>
-          </div>
-          <div class="col-2">
-            <a :href="problem.url" target="_blank">{{ problem.title }}</a>
+    <div v-else-if="state.fetchingRecentContest">
+      <h3>Loading contest details...</h3>
+    </div>
+    <div v-else-if="state.fetchingRecentContest == false">
+      <div v-if="state.recentContest != null">
+        <div class="section">
+          <h3>{{ state.recentContest.name }}</h3>
+          <div>
+            <span class="label">Time left: </span>
+            <span class="value" v-if="timer.timeLeft > 0">
+              {{ timer.timeLeftLabel }}
+            </span>
+            <span class="value" v-else-if="timer.timeLeft == 0"> Completed </span>
           </div>
         </div>
-      </div>
+        <div class="problems">
+          <div class="problem" v-for="p in state.recentContest.problems">
+            <div class="col-1">
+              <a :href="p.problem.url" target="_blank">{{ p.problem.uid }}</a>
+            </div>
+            <div class="col-2">
+              <a :href="p.problem.url" target="_blank">{{ p.problem.title }}</a>
+            </div>
+            <div class="col-3" v-if="p.isEvaluated">
+              <span>{{ p.verdict }}</span>
+            </div>
+          </div>
+        </div>
 
-      <div v-if="timer.timeLeft == 0 || true">
-        <div>
-          <button @click="evaluteContestSubmissions">Evaluate submissions</button>
+        <div v-if="timer.timeLeft == 0 || true">
+          <div>
+            <button @click="evaluteContestSubmissions">Evaluate submissions</button>
+          </div>
         </div>
       </div>
-    </div>
-    <div v-else-if="appStore.syncingProblemsInProgress">
-      <h3>Codeforces problem set syncing in progress...</h3>
-    </div>
-    <div v-else-if="!state.fetchingRecentContest">
-      <h3>{{ contestName }}</h3>
-      <div>
-        <button @click="createNewContest">Start contest</button>
+      <div v-else>
+        <h3>{{ contestName }}</h3>
+        <div>
+          <button @click="createNewContest">Start contest</button>
+        </div>
       </div>
     </div>
     <!-- I'm aware, this will not make any difference if we refresh the page -->
-    <div v-else>
-      <h3>Loading contest details...</h3>
+    <div v-else-if="appStore.syncingProblemsInProgress">
+      <h3>Codeforces problem set syncing in progress...</h3>
     </div>
   </div>
 </template>
@@ -166,9 +153,9 @@ div.section {
 }
 
 .problem {
-  max-width: 550px;
+  max-width: 600px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: var(--section-gap);
 }
 
@@ -177,7 +164,11 @@ div.section {
 }
 
 .col-2 {
-  grid-column: 2 / span 3;
+  grid-column: 2 / span 2;
+}
+
+.col-3 {
+  grid-column: 4 / span 2;
 }
 
 .col-1 > a,

@@ -1,15 +1,12 @@
-use juniper::{
-    EmptySubscription, FieldError, FieldResult, RootNode, graphql_object, graphql_value,
-};
+use juniper::{EmptySubscription, FieldResult, RootNode, graphql_object};
 
 use super::{
-    contest::{Contest, CreateContestInput},
+    contest::{Contest, CreateContestInput, EvaluateContestInput},
     user::{User, UserInput},
 };
 use crate::{
     context::Context,
     controllers::{self, problem_list::sync_problem_list},
-    db::Pool,
 };
 
 pub struct QueryRoot;
@@ -42,7 +39,7 @@ impl MutationRoot {
     )]
     async fn create_or_login_user(ctx: &Context, input: UserInput) -> FieldResult<User> {
         let mut tx = ctx.db_pool.clone().begin().await?;
-        let user = User::by_username(&mut *tx, &input.username).await?;
+        let user = User::create(&mut *tx, &input.username).await?;
 
         tx.commit().await?;
 
@@ -52,6 +49,12 @@ impl MutationRoot {
     #[graphql(description = "Create new local contest")]
     async fn create_contest(ctx: &Context, input: CreateContestInput) -> FieldResult<Contest> {
         let contest = controllers::contest::create(ctx, &input).await?;
+        Ok(contest)
+    }
+
+    #[graphql(description = "Evaluate submissions done by the user for given contestId")]
+    async fn evaluate_contest(ctx: &Context, input: EvaluateContestInput) -> FieldResult<Contest> {
+        let contest = controllers::contest::evaluate(ctx, &input).await?;
         Ok(contest)
     }
 

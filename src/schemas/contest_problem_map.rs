@@ -10,7 +10,7 @@ pub struct ContestProblemMap {
     pub id: i64,
     pub fk_contest_id: i64,
     pub fk_problem_id: i64,
-    pub latest_submission_at: i64,
+    pub latest_submission_at: Option<i64>,
     pub is_evaluated: bool,
     pub verdict: String,
 }
@@ -22,19 +22,21 @@ impl ContestProblemMap {
     }
 
     async fn problem(&self, ctx: &Context) -> Problem {
+        // TODO: Ideally, it should handled by dataloder
         Problem::by_id(ctx, &self.fk_problem_id)
             .await
             .expect("Unable to find problem for this ContestProblemMap")
     }
 
     async fn contest(&self, ctx: &Context) -> Contest {
+        // TODO: Ideally, it should handled by dataloder
         Contest::by_id(ctx, &self.fk_contest_id)
             .await
             .expect("Unable to find problem for this ContestProblemMap")
     }
 
-    fn latest_submission_at(&self) -> i32 {
-        self.latest_submission_at as i32
+    fn latest_submission_at(&self) -> Option<i32> {
+        self.latest_submission_at.map(|x| x as i32)
     }
 
     fn is_evaluated(&self) -> &bool {
@@ -48,15 +50,13 @@ impl ContestProblemMap {
 
 impl ContestProblemMap {
     pub async fn by_contest_id(ctx: &Context, contest_id: &i64) -> sqlx::Result<Vec<Self>> {
-        let mut tx = ctx.db_pool.begin().await?;
-
         sqlx::query_as!(
             Self,
             r#"
                 select cpm.id as "id!",
                     cpm.fk_contest_id,
                     cpm.fk_problem_id,
-                    cpm.latest_submission_at as "latest_submission_at!",
+                    cpm.latest_submission_at,
                     cpm.is_evaluated as "is_evaluated!",
                     cpm.verdict as "verdict!"
                 from contest_problem_map as cpm
@@ -64,7 +64,34 @@ impl ContestProblemMap {
             "#,
             contest_id
         )
-        .fetch_all(&mut *tx)
+        .fetch_all(&*ctx.db_pool)
         .await
+    }
+
+    // TODO: Should have a &self signature and should not be dependent on contest_id
+    // and problem_id
+    pub async fn update_evaluation_stats(
+        ctx: &Context,
+        contest_id: &i64,
+        problem_id: &i64,
+        stat: &(i64, String),
+    ) -> sqlx::Result<()> {
+        sqlx::query!(
+            r#"
+            update contest_problem_map as cpm
+            set is_evaluated = true,
+            latest_submission_at = ?,
+            verdict = ?
+            where cpm.fk_contest_id = ? and cpm.fk_problem_id = ?;
+        "#,
+            stat.0,
+            stat.1,
+            contest_id,
+            problem_id
+        )
+        .execute(&*ctx.db_pool)
+        .await?;
+
+        Ok(())
     }
 }

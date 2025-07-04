@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                select cpm.id as \"id!\",\n                    cpm.fk_contest_id,\n                    cpm.fk_problem_id,\n                    cpm.latest_submission_at,\n                    cpm.is_evaluated as \"is_evaluated!\",\n                    cpm.verdict as \"verdict!\"\n                from contest_problem_map as cpm\n                where cpm.fk_contest_id = ?\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "fk_contest_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "fk_problem_id",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "latest_submission_at",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "is_evaluated!",
+        "ordinal": 4,
+        "type_info": "Bool"
+      },
+      {
+        "name": "verdict!",
+        "ordinal": 5,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "77a8df8c9ac9b38826ce2960a5c56720dffb4ecf1531819a5f7f52760e4d42d6"
+}
