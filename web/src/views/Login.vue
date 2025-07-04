@@ -30,7 +30,7 @@ enum LoginInfoStatus {
   INVALID_RESPONSE,
 }
 
-function updateLoginInfo(status: LoginInfoStatus = 'LOGGED_IN') {
+function updateLoginInfo(status: LoginInfoStatus = LOGGED_IN) {
   const statusTextMap = {
     [LoginInfoStatus.LOGGED_IN]: 'Logged in!',
     [LoginInfoStatus.LOGGED_OUT]: 'Logged out!',
@@ -44,7 +44,7 @@ function updateUsernameInStore(username: String) {
   userStore.updateUsername(username)
 }
 
-function onUsernameChange(_event) {
+function onUsernameChange() {
   disableLogin(false)
 }
 

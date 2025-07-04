@@ -8,7 +8,9 @@ const query = `
   }
 `
 
-export default ({ input }) => {
+type CreateContestInput = { input: { name: string } }
+
+export default ({ input }: CreateContestInput) => {
   return graphqlRequest({
     query,
     variables: {
