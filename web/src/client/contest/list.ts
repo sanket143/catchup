@@ -8,6 +8,8 @@ const query = `
       recentContest {
         id
         name
+        duration
+        startedOn
         problems {
           id
           latestSubmissionAt

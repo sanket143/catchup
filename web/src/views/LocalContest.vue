@@ -25,9 +25,10 @@ const isRecentContestCompleted = computed(() => timer?.timeLeft == 0)
 function updateTimeRemaining() {
   const contest = state.value.recentContest
 
+  console.log(contest.duration)
   timer.timeLeft =
-    contest?.duration * 60 * 1000 > Date.now() - contest?.started_on * 1000
-      ? contest?.duration * 60 * 1000 - (Date.now() - contest?.started_on * 1000)
+    contest?.duration * 60 * 1000 > Date.now() - contest?.startedOn * 1000
+      ? contest?.duration * 60 * 1000 - (Date.now() - contest?.startedOn * 1000)
       : 0
 
   const milliseconds = Math.floor((timer.timeLeft % 1000) / 10)
