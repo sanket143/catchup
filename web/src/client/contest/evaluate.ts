@@ -4,6 +4,7 @@ const query = `
   mutation evaluateContest($input: EvaluateContestInput!) {
     evaluateContest(input: $input) {
       id
+      isEvaluated
     }
   }
 `

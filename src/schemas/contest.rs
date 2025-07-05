@@ -45,6 +45,10 @@ impl Contest {
         &self.created_for
     }
 
+    fn is_evaluated(&self) -> &bool {
+        &self.is_evaluated
+    }
+
     async fn problem_tag_group(&self, ctx: &Context) -> FieldResult<ProblemTagGroup> {
         Ok(ProblemTagGroup::by_id(ctx, &self.fk_problem_tag_group_id)
             .await

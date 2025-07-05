@@ -25,7 +25,6 @@ const isRecentContestCompleted = computed(() => timer?.timeLeft == 0)
 function updateTimeRemaining() {
   const contest = state.value.recentContest
 
-  console.log(contest.duration)
   timer.timeLeft =
     contest?.duration * 60 * 1000 > Date.now() - contest?.startedOn * 1000
       ? contest?.duration * 60 * 1000 - (Date.now() - contest?.startedOn * 1000)
@@ -132,14 +131,14 @@ getRecentContest()
               <div class="col-2">
                 <a :href="p.problem.url" target="_blank">{{ p.problem.title }}</a>
               </div>
-              <div class="col-3" v-if="p.isEvaluated">
+              <div class="col-3" v-if="state.recentContest.isEvaluated">
                 <span>{{ p.verdict }}</span>
               </div>
             </div>
           </div>
 
-          <div v-if="timer.timeLeft == 0 || true" class="flex">
-            <div>
+          <div v-if="isRecentContestCompleted" class="flex">
+            <div v-if="!state.recentContest.isEvaluated">
               <button @click="evaluteContestSubmissions">Evaluate submissions</button>
             </div>
             <div>
@@ -188,9 +187,8 @@ div.section {
 
 .problem,
 .contest {
-  max-width: 600px;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
+  max-width: 800px;
   gap: var(--section-gap);
 }
 
@@ -199,15 +197,15 @@ div.section {
 }
 
 .col-1 {
-  grid-column: 1;
+  width: 100px;
 }
 
 .col-2 {
-  grid-column: 2 / span 2;
+  width: 280px;
 }
 
 .col-3 {
-  grid-column: 4 / span 2;
+  width: 280px;
 }
 
 .col-1 > a,

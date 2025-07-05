@@ -10,6 +10,7 @@ const query = `
         name
         duration
         startedOn
+        isEvaluated
         problems {
           id
           latestSubmissionAt
