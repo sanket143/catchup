@@ -26,7 +26,7 @@ function updateTimeRemaining() {
   const contest = state.value.recentContest
 
   timer.timeLeft =
-    contest?.duration * 60 * 1000 > Date.now() - contest?.startedOn * 1000
+    contest?.duration * 60 * 1000 > Date.now() - contest?.startedOn * 1000 && !contest?.isEvaluated
       ? contest?.duration * 60 * 1000 - (Date.now() - contest?.startedOn * 1000)
       : 0
 
@@ -55,6 +55,11 @@ function createNewContest() {
   }).then(() => {
     getRecentContest()
   })
+}
+
+// Evaluated contest will be considered ended for now
+function endContest() {
+  evaluteContestSubmissions()
 }
 
 function evaluteContestSubmissions() {
@@ -87,7 +92,7 @@ function getRecentContest() {
 
       state.value.contests = state.value.contests.map((contest) => {
         contest.totalProblems = contest.problems.length
-        contest.noOfSolvedProblems = contest.problems.map((p) => p.verdict == 'OK').length
+        contest.noOfSolvedProblems = contest.problems.filter((p) => p.verdict == 'OK').length
 
         return contest
       })
@@ -141,9 +146,12 @@ getRecentContest()
             <div v-if="!state.recentContest.isEvaluated">
               <button @click="evaluteContestSubmissions">Evaluate submissions</button>
             </div>
-            <div>
+            <div v-else>
               <button @click="createNewContest">Start new contest</button>
             </div>
+          </div>
+          <div v-else>
+            <button @click="endContest">End & evaluate contest</button>
           </div>
         </div>
         <div v-else>
@@ -169,6 +177,9 @@ getRecentContest()
           <span>{{ ct.name }}</span>
         </div>
         <div class="col-2">
+          <span>{{ ct.problemTagGroup?.name }}</span>
+        </div>
+        <div class="col-3">
           <span>{{ ct.noOfSolvedProblems }} / {{ ct.totalProblems }}</span>
         </div>
       </div>
@@ -194,6 +205,14 @@ div.section {
 
 .contest {
   max-width: 100%;
+}
+
+.contest > .col-1 {
+  width: 250px;
+}
+
+.contest > .col-2 {
+  width: 150px;
 }
 
 .col-1 {

@@ -11,11 +11,13 @@ const hasData = computed(() => problemTagGroups.length > 0)
   <div class="container">
     <div class="header">
       <div class="col-1">Topic</div>
-      <div class="col-2">No of solved problems</div>
+      <div class="col-2">Total contests</div>
+      <div class="col-3">Total solved problems</div>
     </div>
     <div class="content" v-if="hasData" v-for="tag in problemTagGroups">
       <div class="col-1">{{ tag.name }}</div>
-      <div class="col-2">
+      <div class="col-2">{{ tag.contests.length }}</div>
+      <div class="col-3">
         {{
           tag.contests.reduce((result, val) => {
             result += val.problems.reduce(

@@ -28,6 +28,10 @@ const query = `
       contests {
         id
         name
+        problemTagGroup {
+          id
+          name
+        }
         problems {
           id
           isEvaluated

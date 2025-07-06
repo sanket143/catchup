@@ -7,3 +7,6 @@ migrate:
 migrate-revert:
 	sqlx migrate revert
 
+build-web:
+	cd web && npm run build-only
+

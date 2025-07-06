@@ -74,6 +74,12 @@ pub struct EvaluateContestInput {
     pub contest_id: i32,
 }
 
+#[derive(GraphQLInputObject)]
+#[graphql(description = "End contest input (not in use at the moment)")]
+pub struct EndContestInput {
+    pub contest_id: i32,
+}
+
 impl Contest {
     pub async fn by_id(ctx: &Context, contest_id: &i64) -> sqlx::Result<Self> {
         let mut tx = ctx.db_pool.begin().await?;

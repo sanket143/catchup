@@ -1,7 +1,7 @@
 use juniper::{EmptySubscription, FieldResult, RootNode, graphql_object};
 
 use super::{
-    contest::{Contest, CreateContestInput, EvaluateContestInput},
+    contest::{Contest, CreateContestInput, EndContestInput, EvaluateContestInput},
     problem_tag_group::ProblemTagGroup,
     user::{User, UserInput},
 };
@@ -60,6 +60,12 @@ impl MutationRoot {
     #[graphql(description = "Evaluate submissions done by the user for given contestId")]
     async fn evaluate_contest(ctx: &Context, input: EvaluateContestInput) -> FieldResult<Contest> {
         let contest = controllers::contest::evaluate(ctx, &input).await?;
+        Ok(contest)
+    }
+
+    #[graphql(description = "End contest by id")]
+    async fn end_contest(ctx: &Context, input: EndContestInput) -> FieldResult<Contest> {
+        let contest = controllers::contest::end(ctx, &input).await?;
         Ok(contest)
     }
 

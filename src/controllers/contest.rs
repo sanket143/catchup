@@ -6,7 +6,7 @@ use crate::{
     context::Context,
     schemas::{
         codeforces,
-        contest::{Contest, CreateContestInput, EvaluateContestInput},
+        contest::{Contest, CreateContestInput, EndContestInput, EvaluateContestInput},
         contest_problem_level::ContestProblemLevel,
         contest_problem_map::ContestProblemMap,
         problem::Problem,
@@ -15,6 +15,8 @@ use crate::{
 };
 
 pub async fn create(ctx: &Context, input: &CreateContestInput) -> sqlx::Result<Contest> {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
     let user = ctx.user.as_ref().unwrap();
     let mut tx = ctx.db_pool.begin().await?;
 
@@ -29,6 +31,19 @@ pub async fn create(ctx: &Context, input: &CreateContestInput) -> sqlx::Result<C
     )
     .await?;
 
+    // Use random number to decide how many problems will there be in the contest
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .subsec_nanos();
+
+    let number_of_problems = match nanos % 100 {
+        0..10 => 1,
+        10..30 => 2,
+        30..60 => 3,
+        _ => 4,
+    };
+
     for rating in [
         contest_problem_level.problem_rating_level_1,
         contest_problem_level.problem_rating_level_2,
@@ -36,15 +51,12 @@ pub async fn create(ctx: &Context, input: &CreateContestInput) -> sqlx::Result<C
         contest_problem_level.problem_rating_level_4,
     ]
     .iter()
+    .skip(4 - number_of_problems)
     {
         contest
             .add_random_problem(&mut *tx, rating, &problem_tag_group)
             .await?;
     }
-
-    // for uid in ["CF/2117/B", "CF/2117/A", "CF/2112/C", "CF/2112/B"].iter() {
-    //     contest.add_problem_by_uid(&mut *tx, uid).await?;
-    // }
 
     tx.commit().await?;
 
@@ -109,7 +121,11 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Resu
         }
     }
 
-    let mut level_offset = 1;
+    let mut level_offset = if problem_records.len() >= problems.len() {
+        1
+    } else {
+        -1
+    };
     for (problem_id, problem_submission_stat) in problem_records.iter() {
         if problem_submission_stat.1 != "OK" {
             level_offset = -1;
@@ -131,4 +147,16 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Resu
     tx.commit().await?;
 
     Ok(contest)
+}
+
+pub async fn end(ctx: &Context, input: &EndContestInput) -> sqlx::Result<Contest> {
+    // this mutation might never be used as of now, use evaluate mutation to end the contest
+    // evaluated contest will also be considered as ended
+    evaluate(
+        ctx,
+        &EvaluateContestInput {
+            contest_id: input.contest_id,
+        },
+    )
+    .await
 }
