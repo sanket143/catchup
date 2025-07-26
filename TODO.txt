@@ -1,0 +1,4 @@
+- [ ] Explore leetcode API (https://www.postman.com/flight-geoscientist-10690765/leetcode/collection/yfxu2ou/leetcode-api-graphql-endpoints)
+- [x] Get username from cookies and have it in the common context
+- [x] When we start the db from scratch, all the requests fails saying, 'username doesn't exists'
+- [ ] Add dataloader

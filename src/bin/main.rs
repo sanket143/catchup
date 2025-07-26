@@ -12,6 +12,7 @@ async fn main() -> std::io::Result<()> {
             .expect("Failed to create db pool for Sqlite"),
     );
 
+    println!("Running server on :3001");
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(pool.clone()))

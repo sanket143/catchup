@@ -126,9 +126,16 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Resu
     } else {
         -1
     };
+
+    let mut problems_are_still_under_testing = false;
+
     for (problem_id, problem_submission_stat) in problem_records.iter() {
         if problem_submission_stat.1 != "OK" {
             level_offset = -1;
+        }
+
+        if problem_submission_stat.1 == "TESTING" {
+            problems_are_still_under_testing = true;
         }
 
         // TODO: should be doable using contest_problem_map.evaluate(...) like API
@@ -139,6 +146,11 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Resu
             problem_submission_stat,
         )
         .await?;
+    }
+
+    // Don't update evaluation status and user's level if submissions are still under testing
+    if problems_are_still_under_testing {
+        return Ok(contest);
     }
 
     contest.mark_as_evaluate(&mut *tx).await?;
