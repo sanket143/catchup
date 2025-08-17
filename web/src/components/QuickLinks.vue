@@ -28,6 +28,10 @@ const data = [
     name: 'CSES',
     link: 'https://cses.fi/problemset',
   },
+  {
+    name: 'CatchUp (GitHub)',
+    link: 'https://github.com/sanket143/catchup',
+  },
 ]
 </script>
 
