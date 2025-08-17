@@ -62,6 +62,11 @@ fetchUserDashboardDetails()
       <QuickLink />
     </div>
   </div>
+  <div v-else>
+    <div class="login-card dashboard">
+      <router-link to="/login">Login first, it's just a Codeforces username</router-link>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -83,5 +88,9 @@ fetchUserDashboardDetails()
   background: var(--color-background-soft);
   height: 500px;
   flex: 1;
+}
+
+.login-card {
+  padding: 10px;
 }
 </style>
