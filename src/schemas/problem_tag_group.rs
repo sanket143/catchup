@@ -1,5 +1,5 @@
 use futures::stream::{self, StreamExt, TryStreamExt};
-use juniper::{FieldResult, graphql_object};
+use juniper::{FieldError, FieldResult, graphql_object, graphql_value};
 
 use crate::context::Context;
 
@@ -21,7 +21,11 @@ impl ProblemTagGroup {
     }
 
     async fn contests(&self, ctx: &Context) -> FieldResult<Vec<Contest>> {
-        let user = ctx.user.as_ref().expect("User not logged in");
+        let user = ctx
+            .user
+            .as_ref()
+            .ok_or(FieldError::new("User is not logged in", graphql_value!({})))?;
+
         let contest_ids = stream::iter(
             sqlx::query!(
                 r#"

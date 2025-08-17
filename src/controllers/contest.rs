@@ -1,4 +1,5 @@
 use futures::stream::{self, StreamExt, TryStreamExt};
+use juniper::FieldResult;
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -63,7 +64,7 @@ pub async fn create(ctx: &Context, input: &CreateContestInput) -> sqlx::Result<C
     Ok(contest)
 }
 
-pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Result<Contest> {
+pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> FieldResult<Contest> {
     #[derive(Deserialize)]
     pub struct Response {
         pub result: Vec<codeforces::CodeforcesSubmission>,
@@ -88,11 +89,9 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Resu
 
     let body: Response =
         ureq::get("https://codeforces.com/api/user.status?handle=sankxt143&from=1&count=500")
-            .call()
-            .expect("Failed to fetch submission details from codeforces")
+            .call()?
             .body_mut()
-            .read_json()
-            .expect("Failed to parse the body using JSON parser");
+            .read_json()?;
 
     let creation_time_threshold = (
         contest.started_on,
@@ -161,7 +160,7 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> sqlx::Resu
     Ok(contest)
 }
 
-pub async fn end(ctx: &Context, input: &EndContestInput) -> sqlx::Result<Contest> {
+pub async fn end(ctx: &Context, input: &EndContestInput) -> FieldResult<Contest> {
     // this mutation might never be used as of now, use evaluate mutation to end the contest
     // evaluated contest will also be considered as ended
     evaluate(

@@ -26,10 +26,7 @@ impl FromRequest for Context {
             let mut user = None;
 
             if let Some(username) = username.map(|x| (!x.is_empty()).then_some(x)).flatten() {
-                user = Some(User::by_username(&*pool, &username).await.expect(&format!(
-                    "User with {} username doesn't exist, please login again with this username.",
-                    username
-                )));
+                user = User::by_username(&*pool, &username).await.ok();
             }
 
             Ok(Context {

@@ -1,6 +1,14 @@
 import axios from 'axios'
 
-export default ({ query, variables, headers = {} }) => {
+export default async ({
+  query,
+  variables = {},
+  headers = {},
+}: {
+  query: string
+  variables?: object
+  headers?: object
+}) => {
   return axios({
     method: 'post',
     url: '/graphql',

@@ -1,4 +1,4 @@
-use juniper::{FieldResult, GraphQLInputObject, graphql_object};
+use juniper::{FieldError, FieldResult, GraphQLInputObject, graphql_object, graphql_value};
 
 use crate::context::Context;
 
@@ -50,15 +50,25 @@ impl Contest {
     }
 
     async fn problem_tag_group(&self, ctx: &Context) -> FieldResult<ProblemTagGroup> {
-        Ok(ProblemTagGroup::by_id(ctx, &self.fk_problem_tag_group_id)
+        ProblemTagGroup::by_id(ctx, &self.fk_problem_tag_group_id)
             .await
-            .expect("Failed to get problem tag group for a contest"))
+            .map_err(|_| {
+                FieldError::new(
+                    "Failed to get problem tag group for a contest",
+                    graphql_value!({}),
+                )
+            })
     }
 
-    async fn problems(&self, ctx: &Context) -> Vec<ContestProblemMap> {
+    async fn problems(&self, ctx: &Context) -> FieldResult<Vec<ContestProblemMap>> {
         ContestProblemMap::by_contest_id(ctx, &self.id)
             .await
-            .expect("Unable to fetch contest problem map for a Contest")
+            .map_err(|_| {
+                FieldError::new(
+                    "Unable to fetch contest problem map for a Contest",
+                    graphql_value!({}),
+                )
+            })
     }
 }
 

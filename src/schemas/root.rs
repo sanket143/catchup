@@ -1,4 +1,6 @@
-use juniper::{EmptySubscription, FieldResult, RootNode, graphql_object};
+use juniper::{
+    EmptySubscription, FieldError, FieldResult, RootNode, graphql_object, graphql_value,
+};
 
 use super::{
     contest::{Contest, CreateContestInput, EndContestInput, EvaluateContestInput},
@@ -16,7 +18,11 @@ pub struct QueryRoot;
 impl QueryRoot {
     #[graphql(description = "Get currently logged in user")]
     async fn user(ctx: &Context) -> FieldResult<&User> {
-        let user = ctx.user.as_ref().expect("User not logged in");
+        let user = ctx
+            .user
+            .as_ref()
+            .ok_or(FieldError::new("User is not logged in", graphql_value!({})))?;
+
         Ok(user)
     }
 

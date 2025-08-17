@@ -1,4 +1,4 @@
-use juniper::graphql_object;
+use juniper::{FieldError, FieldResult, graphql_object, graphql_value};
 use serde::Serialize;
 
 use crate::context::Context;
@@ -21,18 +21,24 @@ impl ContestProblemMap {
         self.id as i32
     }
 
-    async fn problem(&self, ctx: &Context) -> Problem {
+    async fn problem(&self, ctx: &Context) -> FieldResult<Problem> {
         // TODO: Ideally, it should handled by dataloder
-        Problem::by_id(ctx, &self.fk_problem_id)
-            .await
-            .expect("Unable to find problem for this ContestProblemMap")
+        Problem::by_id(ctx, &self.fk_problem_id).await.map_err(|_| {
+            FieldError::new(
+                "Unable to find problem for this ContestProblemMap",
+                graphql_value!({}),
+            )
+        })
     }
 
-    async fn contest(&self, ctx: &Context) -> Contest {
+    async fn contest(&self, ctx: &Context) -> FieldResult<Contest> {
         // TODO: Ideally, it should handled by dataloder
-        Contest::by_id(ctx, &self.fk_contest_id)
-            .await
-            .expect("Unable to find problem for this ContestProblemMap")
+        Contest::by_id(ctx, &self.fk_contest_id).await.map_err(|_| {
+            FieldError::new(
+                "Unable to find contest for this ContestProblemMap",
+                graphql_value!({}),
+            )
+        })
     }
 
     fn latest_submission_at(&self) -> Option<i32> {

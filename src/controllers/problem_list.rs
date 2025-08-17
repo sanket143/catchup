@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use juniper::{FieldError, FieldResult, graphql_value};
 use serde::Deserialize;
 use sqlx::{QueryBuilder, Row};
 
@@ -33,16 +34,14 @@ struct ResponseResult {
     pub problems: Vec<CodeforcesProblem>,
 }
 
-pub async fn sync_problem_list(ctx: &Context) -> sqlx::Result<bool> {
+pub async fn sync_problem_list(ctx: &Context) -> FieldResult<bool> {
     let mut tx = ctx.db_pool.begin().await?;
 
     println!("Syncing Codeforces problems...");
     let body: Response = ureq::get("https://codeforces.com/api/problemset.problems")
-        .call()
-        .expect("Failed to fetch problems from codeforces")
+        .call()?
         .body_mut()
-        .read_json()
-        .expect("Failed to fetch problems from codeforces");
+        .read_json()?;
 
     let mut query_builder: QueryBuilder<sqlx::Sqlite> = QueryBuilder::new("");
     let mut tags = HashSet::new();
