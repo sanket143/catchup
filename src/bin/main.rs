@@ -21,7 +21,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
     })
     .workers(2)
-    .bind(("127.0.0.1", 3001))?
+    .bind(("0.0.0.0", 3001))?
     .run()
     .await
 }

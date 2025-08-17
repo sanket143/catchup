@@ -91,7 +91,11 @@ impl User {
         Ok(result)
     }
 
-    async fn contests(&self, ctx: &Context) -> FieldResult<Vec<Contest>> {
+    async fn contests(
+        &self,
+        ctx: &Context,
+        filters: Option<UserContestFilter>,
+    ) -> FieldResult<Vec<Contest>> {
         let mut tx = ctx.db_pool.clone().begin().await?;
         let result = sqlx::query_as!(
             Contest,
@@ -119,4 +123,10 @@ impl User {
 #[graphql(description = "User Input")]
 pub struct UserInput {
     pub username: String,
+}
+
+#[derive(GraphQLInputObject)]
+#[graphql(description = "User.contests filter")]
+pub struct UserContestFilter {
+    pub ids: Option<Vec<i32>>,
 }
