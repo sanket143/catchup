@@ -1,10 +1,4 @@
-@font-face {
-  font-family: 'JetBrains Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
-}
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Jua&display=swap');
 
 :root {
   --vt-c-white: #ffffff;

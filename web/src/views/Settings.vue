@@ -15,7 +15,7 @@ async function syncProblems() {
 
   appStore.updateSyncingProblemStatus(true)
 
-  syncProblemSetRequest().finaly(() => {
+  syncProblemSetRequest().finally(() => {
     appStore.updateSyncingProblemStatus(false)
   })
 }
