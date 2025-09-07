@@ -1,5 +1,5 @@
 use actix_web::{App, HttpServer, middleware::Logger, web::Data};
-use catchup::{db::get_db_pool, handlers::register, schemas::root::create_schema};
+use catchup::{db::DBClient, handlers::register, schemas::root::create_schema};
 use std::sync::Arc;
 
 #[actix_web::main]
@@ -7,9 +7,7 @@ async fn main() -> std::io::Result<()> {
     dotenvy::dotenv().ok();
 
     let pool = Arc::new(
-        get_db_pool()
-            .await
-            .expect("Failed to create db pool for Sqlite"),
+        DBClient::get().pool().await
     );
 
     println!("Running server on :3001");

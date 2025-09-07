@@ -1,4 +1,5 @@
 use juniper::{FieldError, FieldResult, GraphQLInputObject, graphql_object, graphql_value};
+use sqlx::prelude::FromRow;
 
 use crate::context::Context;
 
@@ -6,7 +7,7 @@ use super::{
     contest_problem_map::ContestProblemMap, problem_tag_group::ProblemTagGroup, user::User,
 };
 
-#[derive(Debug)]
+#[derive(Debug, FromRow)]
 pub struct Contest {
     pub id: i64,
     pub name: String,
@@ -94,18 +95,17 @@ impl Contest {
     pub async fn by_id(ctx: &Context, contest_id: &i64) -> sqlx::Result<Self> {
         let mut tx = ctx.db_pool.begin().await?;
 
-        sqlx::query_as!(
-            Self,
+        sqlx::query_as::<_, Self>(
             r#"
                 select
-                    c.id, c.name, c.duration, c.level, c.created_on,
+                    c.id as "id!", c.name, c.duration, c.level, c.created_on,
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
-                from contest as c
+                from public.contest as c
                 where c.id = ?
             "#,
-            contest_id
         )
+        .bind(*contest_id)
         .fetch_one(&mut *tx)
         .await
     }
@@ -118,40 +118,39 @@ impl Contest {
         problem_tag: &ProblemTagGroup,
     ) -> sqlx::Result<Self>
     where
-        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query_as!(
-            Self,
+        sqlx::query_as::<_, Self>(
             r#"
                 insert into contest (name, duration, level, created_for, fk_problem_tag_group_id)
                 values (?, ?, ?, ?, ?) returning id as "id!", name, duration, level,
                 created_on, started_on, created_for, fk_problem_tag_group_id,
-                is_evaluated;
+                is_evaluated
             "#,
-            input.name,
-            duration,
-            user.level,
-            user.username,
-            problem_tag.id
         )
+        .bind(input.name.clone())
+        .bind(*duration)
+        .bind(user.level)
+        .bind(user.username.clone())
+        .bind(problem_tag.id)
         .fetch_one(tx)
         .await
     }
 
     pub async fn add_problem_by_uid<'e, E>(&self, tx: E, problem_uid: &str) -> sqlx::Result<()>
     where
-        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query!(
+        sqlx::query(
             r#"
                 insert into contest_problem_map(fk_contest_id, fk_problem_id)
                 select ?, p.id
                 from problem as p
                 where p.uid = ?;
             "#,
-            self.id,
-            problem_uid,
         )
+        .bind(self.id)
+        .bind(problem_uid)
         .execute(tx)
         .await?;
 
@@ -165,9 +164,9 @@ impl Contest {
         problem_tag_group: &ProblemTagGroup,
     ) -> sqlx::Result<()>
     where
-        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query!(
+        sqlx::query(
             r#"
             insert into contest_problem_map(fk_contest_id, fk_problem_id)
             select ?, p.id
@@ -187,11 +186,11 @@ impl Contest {
             and cpm.id is null
             order by random() limit 1;
         "#,
-            self.id,
-            problem_rating,
-            self.id,
-            problem_tag_group.id,
         )
+        .bind(self.id)
+        .bind(*problem_rating)
+        .bind(self.id)
+        .bind(problem_tag_group.id)
         .execute(tx)
         .await?;
 
@@ -200,16 +199,16 @@ impl Contest {
 
     pub async fn mark_as_evaluate<'e, E>(&self, tx: E) -> sqlx::Result<()>
     where
-        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query!(
+        sqlx::query(
             r#"
                 update contest as c
                 set is_evaluated = true
                 where c.id = ?;
             "#,
-            self.id,
         )
+        .bind(self.id)
         .execute(tx)
         .await?;
 

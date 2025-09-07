@@ -56,8 +56,7 @@ impl ContestProblemMap {
 
 impl ContestProblemMap {
     pub async fn by_contest_id(ctx: &Context, contest_id: &i64) -> sqlx::Result<Vec<Self>> {
-        sqlx::query_as!(
-            Self,
+        sqlx::query_as::<_, Self>(
             r#"
                 select cpm.id as "id!",
                     cpm.fk_contest_id,
@@ -68,8 +67,8 @@ impl ContestProblemMap {
                 from contest_problem_map as cpm
                 where cpm.fk_contest_id = ?
             "#,
-            contest_id
         )
+        .bind(*contest_id)
         .fetch_all(&*ctx.db_pool)
         .await
     }
@@ -83,21 +82,19 @@ impl ContestProblemMap {
         stat: &(i64, String),
     ) -> sqlx::Result<()>
     where
-        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query!(
+        sqlx::query(
             r#"
-            update contest_problem_map as cpm
-            set is_evaluated = true,
-            latest_submission_at = ?,
-            verdict = ?
-            where cpm.fk_contest_id = ? and cpm.fk_problem_id = ?;
-        "#,
-            stat.0,
-            stat.1,
-            contest_id,
-            problem_id
+                update contest_problem_map
+                set latest_submission_at = ?, verdict = ?, is_evaluated = true
+                where fk_contest_id = ? and fk_problem_id = ?;
+            "#,
         )
+        .bind(stat.0 as i32)
+        .bind(stat.1.clone())
+        .bind(*contest_id as i32)
+        .bind(*problem_id as i32)
         .execute(tx)
         .await?;
 

@@ -1,5 +1,3 @@
-use sqlx::{Executor, Sqlite};
-
 #[derive(Debug, sqlx::FromRow)]
 pub struct ContestProblemLevel {
     pub id: i64,
@@ -15,13 +13,12 @@ pub struct ContestProblemLevel {
 impl ContestProblemLevel {
     pub async fn get<'e, E>(tx: E, level: i64) -> sqlx::Result<ContestProblemLevel>
     where
-        E: Executor<'e, Database = Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        let result = sqlx::query_as_unchecked!(
-            ContestProblemLevel,
+        let result = sqlx::query_as::<_, ContestProblemLevel>(
             r#"
             select
-                id, level, duration, performance,
+                id as "id!", level, duration, performance,
                 problem_rating_level_1,
                 problem_rating_level_2,
                 problem_rating_level_3,
@@ -29,8 +26,8 @@ impl ContestProblemLevel {
             from contest_problem_level as cpl
             where level = ?;
         "#,
-            level
         )
+        .bind(level)
         .fetch_one(tx)
         .await?;
 

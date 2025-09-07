@@ -1,3 +1,4 @@
+use sqlx::Row;
 use juniper::{
     EmptySubscription, FieldError, FieldResult, RootNode, graphql_object, graphql_value,
 };
@@ -30,12 +31,18 @@ impl QueryRoot {
         description = "List of all the problem tag groups, basically a group of Codeforces topics. Refer to migration file in the codebase for list of tag groups."
     )]
     async fn problem_tag_groups(ctx: &Context) -> FieldResult<Vec<ProblemTagGroup>> {
-        let result = sqlx::query_as!(
-            ProblemTagGroup,
-            r#"select id as "id!", name from problem_tag_group;"#,
+        let rows = sqlx::query(
+            r#"select id, name from problem_tag_group;"#,
         )
         .fetch_all(&*ctx.db_pool)
         .await?;
+
+        let result = rows.into_iter().map(|row| {
+            ProblemTagGroup {
+                id: row.try_get("id").unwrap_or_default(),
+                name: row.try_get("name").unwrap_or_default(),
+            }
+        }).collect();
 
         Ok(result)
     }

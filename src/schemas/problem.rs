@@ -37,15 +37,10 @@ impl Problem {
     pub async fn by_id(ctx: &Context, id: &i64) -> sqlx::Result<Self> {
         let mut tx = ctx.db_pool.begin().await?;
 
-        sqlx::query_as!(
-            Self,
-            r#"
-                select p.id, p.uid, p.title, p.url, p.rating
-                from problem as p
-                where p.id = ?
-            "#,
-            id
+        sqlx::query_as::<_, Self>(
+            r#"select id as "id!", uid, title, url, rating from problem where id = ?"#,
         )
+        .bind(*id)
         .fetch_one(&mut *tx)
         .await
     }

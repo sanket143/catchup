@@ -2,9 +2,10 @@ use futures::stream::{self, StreamExt, TryStreamExt};
 use juniper::{FieldError, FieldResult, graphql_object, graphql_value};
 
 use crate::context::Context;
+use crate::schemas::contest::Contest;
+use sqlx::Row;
 
-use super::contest::Contest;
-
+#[derive(Debug, sqlx::FromRow)]
 pub struct ProblemTagGroup {
     pub id: i64,
     pub name: String,
@@ -26,23 +27,27 @@ impl ProblemTagGroup {
             .as_ref()
             .ok_or(FieldError::new("User is not logged in", graphql_value!({})))?;
 
-        let contest_ids = stream::iter(
-            sqlx::query!(
-                r#"
-                    select c.id from problem_tag_group as ptg
-                    join contest as c
-                    on c.fk_problem_tag_group_id = ptg.id
-                    and c.is_deleted = false
-                    where ptg.id = ?
-                    and c.created_for = ?
-                "#,
-                self.id,
-                user.username
-            )
-            .fetch_all(&*ctx.db_pool)
-            .await?,
+        let rows = sqlx::query(
+            r#"
+                select c.id from problem_tag_group as ptg
+                join contest as c
+                on c.fk_problem_tag_group_id = ptg.id
+                and c.is_deleted = false
+                where ptg.id = ?
+                and c.created_for = ?
+            "#,
         )
-        .map(|x| async move { Contest::by_id(ctx, &x.id).await });
+        .bind(self.id)
+        .bind(user.username.clone())
+        .fetch_all(&*ctx.db_pool)
+        .await?;
+
+        let contest_ids = stream::iter(
+            rows.into_iter().map(|row| {
+                let id: i64 = row.try_get("id").unwrap_or_default();
+                async move { Contest::by_id(ctx, &id).await }
+            })
+        );
 
         let contests: Vec<Contest> = contest_ids.buffer_unordered(10).try_collect().await?;
 
@@ -53,10 +58,9 @@ impl ProblemTagGroup {
 impl ProblemTagGroup {
     pub async fn get_random<'e, E>(tx: E) -> Result<Self, sqlx::Error>
     where
-        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        let result = sqlx::query_as!(
-            Self,
+        let row = sqlx::query(
             r#"
             select id, name from problem_tag_group
             order by random() limit 1
@@ -65,21 +69,28 @@ impl ProblemTagGroup {
         .fetch_one(tx)
         .await?;
 
-        Ok(result)
+        Ok(ProblemTagGroup {
+            id: row.try_get("id").unwrap_or_default(),
+            name: row.try_get("name").unwrap_or_default(),
+        })
     }
 
     pub async fn by_id(ctx: &Context, problem_tag_group_id: &i64) -> Result<Self, sqlx::Error> {
         let mut tx = ctx.db_pool.begin().await?;
 
-        sqlx::query_as!(
-            Self,
+        let row = sqlx::query(
             r#"
                 select id, name from problem_tag_group
                 where id = ? limit 1
             "#,
-            problem_tag_group_id
         )
+        .bind(*problem_tag_group_id)
         .fetch_one(&mut *tx)
-        .await
+        .await?;
+
+        Ok(ProblemTagGroup {
+            id: row.try_get("id").unwrap_or_default(),
+            name: row.try_get("name").unwrap_or_default(),
+        })
     }
 }

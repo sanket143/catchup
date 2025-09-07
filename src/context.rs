@@ -1,38 +1,22 @@
-use crate::schemas::user::{self, User};
-use actix_web::dev::Payload;
-use actix_web::{FromRequest, HttpRequest, web};
-use futures::future::BoxFuture;
-use sqlx::SqlitePool;
-use std::sync::Arc;
+use crate::db;
+use crate::schemas::user;
+use lambda_http::Request;
+use sqlx::PgPool;
 
 pub struct Context {
-    pub db_pool: Arc<SqlitePool>,
+    pub db_pool: &'static PgPool,
     pub user: Option<user::User>,
 }
 
 impl juniper::Context for Context {}
 
-impl FromRequest for Context {
-    type Error = actix_web::Error;
-    type Future = BoxFuture<'static, Result<Self, Self::Error>>;
+impl Context {
+    pub async fn from_request(_req: &Request) -> Self {
+        let db_pool = db::DBClient::get().pool().await;
 
-    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
-        let pool_data = req.app_data::<web::Data<Arc<SqlitePool>>>()
-            .expect("DB Pool not configured in app_data. Make sure to call .app_data(web::Data::new(pool.clone()))");
-        let pool = pool_data.get_ref().clone(); // Clone the Arc<SqlitePool>
-        let username = req.cookie("username").map(|c| c.value().to_string());
-
-        Box::pin(async move {
-            let mut user = None;
-
-            if let Some(username) = username.map(|x| (!x.is_empty()).then_some(x)).flatten() {
-                user = User::by_username(&*pool, &username).await.ok();
-            }
-
-            Ok(Context {
-                user,
-                db_pool: pool,
-            })
-        })
+        Self {
+            user: None,
+            db_pool,
+        }
     }
 }

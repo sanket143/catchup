@@ -1,10 +1,10 @@
 use juniper::{FieldResult, GraphQLInputObject, graphql_object};
-use sqlx::Executor;
+use sqlx::{Executor, prelude::FromRow};
 
 use super::contest::Contest;
 use crate::context::Context;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, FromRow)]
 pub struct User {
     pub id: i64,
     pub level: i64,
@@ -14,13 +14,12 @@ pub struct User {
 impl User {
     pub async fn by_username<'e, E>(tx: E, username: &str) -> sqlx::Result<Self>
     where
-        E: Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query_as!(
-            Self,
+        sqlx::query_as::<_, Self>(
             r#"select id as "id!", username, level from user as u where u.username = ?"#,
-            username
         )
+        .bind(username)
         .fetch_one(tx)
         .await
     }
@@ -29,26 +28,25 @@ impl User {
 impl User {
     pub async fn create<'e, E>(tx: E, username: &str) -> sqlx::Result<Self>
     where
-        E: Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query_as!(
-            Self,
-            "insert into user (username) values (?) on conflict (username) do update set is_deleted = false returning id, username, level;",
-            username
+        sqlx::query_as::<_, Self>(
+            r#"insert into user (username) values (?) on conflict (username) do update set is_deleted = false returning id as "id!", username, level;"#,
         )
+        .bind(username)
         .fetch_one(tx)
         .await
     }
 
     pub async fn update_level<'e, E>(&self, tx: E, level_offset: &i64) -> sqlx::Result<()>
     where
-        E: Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query!(
+        sqlx::query(
             "update user set level = max(level + ?, 1) where username = ?",
-            level_offset,
-            self.username
         )
+        .bind(*level_offset)
+        .bind(self.username.clone())
         .execute(tx)
         .await?;
 
@@ -71,11 +69,10 @@ impl User {
     }
 
     async fn recent_contest(&self, ctx: &Context) -> FieldResult<Option<Contest>> {
-        let result = sqlx::query_as!(
-            Contest,
+        let result = sqlx::query_as::<_, Contest>(
             r#"
                 select
-                    c.id, c.name, c.duration, c.level, c.created_on,
+                    c.id as "id!", c.name, c.duration, c.level, c.created_on,
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c
@@ -83,8 +80,8 @@ impl User {
                 order by created_on desc
                 limit 1;
             "#,
-            self.username
         )
+        .bind(self.username.clone())
         .fetch_optional(&*ctx.db_pool)
         .await?;
 
@@ -97,19 +94,18 @@ impl User {
         filters: Option<UserContestFilter>,
     ) -> FieldResult<Vec<Contest>> {
         let mut tx = ctx.db_pool.clone().begin().await?;
-        let result = sqlx::query_as!(
-            Contest,
+        let result = sqlx::query_as::<_, Contest>(
             r#"
                 select
-                    c.id, c.name, c.duration, c.level, c.created_on,
+                    c.id as "id!", c.name, c.duration, c.level, c.created_on,
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c
                 where c.created_for = ?
                 order by created_on desc;
             "#,
-            self.username
         )
+        .bind(self.username.clone())
         .fetch_all(&mut *tx)
         .await?;
 

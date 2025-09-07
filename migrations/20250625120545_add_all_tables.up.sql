@@ -1,78 +1,78 @@
-create table if not exists user (
-    id integer primary key autoincrement,
+create table if not exists public.user (
+    id serial primary key,
     username varchar(256) not null unique,
     level integer not null default 1,
     created_at timestamp default current_timestamp,
     is_deleted boolean default false
 );
 
-create table if not exists platform (
-    id integer primary key autoincrement,
+create table if not exists public.platform (
+    id serial primary key,
     -- Possible values: codeforces, leetcode, codechef, atcoder, yukicoder
     uid varchar(256) not null unique,
     name varchar(256) not null
 );
 
-create table if not exists problem (
-    id integer primary key autoincrement,
+create table if not exists public.problem (
+    id serial primary key,
     -- Useful when doing problem set sync, do not re-add in the DB if it already exists
     -- Possible values: CF/1122/D2, LC/123, CC/SWAPSTR 
     uid varchar(256) not null unique,
-    fk_platform_id varchar(256) not null,
+    fk_platform_id int not null,
     title text not null,
     url text not null,
     rating integer,
     created_at timestamp default current_timestamp,
     metadata json,
 
-    foreign key (fk_platform_id) references platform(id)
+    foreign key (fk_platform_id) references public.platform(id)
 );
 
-create table if not exists problem_tag_group (
-    id integer primary key autoincrement,
+create table if not exists public.problem_tag_group (
+    id serial primary key,
     name varchar(256) not null unique
 );
 
-create table if not exists problem_tag (
-    id integer primary key autoincrement,
+create table if not exists public.problem_tag (
+    id serial primary key,
     uid varchar(256) not null unique,
     fk_problem_tag_group_id integer not null default 1,
-    created_at timestamp defualt current_timestamp,
+    created_at timestamp default current_timestamp,
     is_deleted boolean default false,
 
-    foreign key (fk_problem_tag_group_id) references problem_tag_group(id)
+    foreign key (fk_problem_tag_group_id) references public.problem_tag_group(id)
 );
 
-create table if not exists problem_tag_map (
-    id integer primary key autoincrement,
+create table if not exists public.problem_tag_map (
+    id serial primary key,
     fk_problem_id integer not null,
     fk_problem_tag_id integer not null,
     is_deleted boolean default false,
 
-    foreign key (fk_problem_id) references problem(id),
-    foreign key (fk_problem_tag_id) references problem_tag(id),
+    foreign key (fk_problem_id) references public.problem(id),
+    foreign key (fk_problem_tag_id) references public.problem_tag(id),
 
     unique (fk_problem_id, fk_problem_tag_id)
 );
 
-create table if not exists contest (
-    id integer primary key autoincrement,
+create table if not exists public.contest (
+    id serial primary key,
     name varchar(256) not null default 'Local Contest',
     duration integer not null default 120, -- minutes
     level integer not null default 1,
-    created_on integer not null default (strftime('%s', 'now')),
-    started_on integer not null default (strftime('%s', 'now')),
+    created_on integer not null default extract(epoch from now()),
+    started_on integer not null default extract(epoch from now()),
     created_for varchar(256) not null,
     fk_problem_tag_group_id integer not null,
     is_evaluated boolean not null default false,
     is_deleted boolean default false,
 
-    foreign key (created_for) references user(username),
-    foreign key (fk_problem_tag_group_id) references problem_tag_group(id)
+    foreign key (created_for) references public.user(username),
+    foreign key (fk_problem_tag_group_id) references public.problem_tag_group(id)
 );
 
-create table if not exists contest_problem_map (
-    id integer primary key autoincrement,
+create table if not exists public.contest_problem_map (
+    id serial primary key,
     fk_contest_id integer not null,
     fk_problem_id integer not null,
     latest_submission_at integer,
@@ -80,14 +80,14 @@ create table if not exists contest_problem_map (
     is_evaluated boolean default false,
     verdict varchar(256) default 'NOT_ATTEMPTED',
 
-    foreign key (fk_contest_id) references contest(id),
-    foreign key (fk_problem_id) references problem(id),
+    foreign key (fk_contest_id) references public.contest(id),
+    foreign key (fk_problem_id) references public.problem(id),
 
     unique(fk_contest_id, fk_problem_id)
 );
 
-create table if not exists contest_problem_level (
-    id integer primary key autoincrement,
+create table if not exists public.contest_problem_level (
+    id serial primary key,
     level integer not null unique,
     duration integer not null, -- in minutes
     performance integer not null,
