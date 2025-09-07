@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use juniper::{FieldError, FieldResult, graphql_value};
+use juniper::FieldResult;
 use serde::Deserialize;
 use sqlx::{QueryBuilder, Row};
 

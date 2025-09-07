@@ -1,28 +1,41 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import lambda from "aws-cdk-lib/aws-lambda";
-import apigw from "aws-cdk-lib/aws-apigateway";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as httpapi from "aws-cdk-lib/aws-apigatewayv2";
+import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 
 export class AwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const fn = new lambda.Function(this, "catchup", {
-      code: lambda.Code.fromAsset("lib/lambda-handler"),
+      code: lambda.Code.fromAsset("../target/lambda/catchup/bootstrap.zip"),
       runtime: lambda.Runtime.PROVIDED_AL2023,
-      handler: "index.handler",
+      handler: "catchup", // matches serverless.yml
+      architecture: lambda.Architecture.ARM_64,
+      environment: {
+        DATABASE_URL: "",
+      },
     });
 
-    const endpoint = new apigw.LambdaRestApi(this, "graphql", {
-      handler: fn,
-      restApiName: "HelloApi",
+    const httpApi = new httpapi.HttpApi(this, "CatchupHttpApi", {
+      corsPreflight: {
+        allowOrigins: ["https://sanket143.me", "https://catchup.sanket143.me"],
+        allowHeaders: ["*"],
+        allowMethods: [
+          httpapi.CorsHttpMethod.POST,
+          httpapi.CorsHttpMethod.OPTIONS,
+        ],
+      },
     });
 
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'AwsQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    httpApi.addRoutes({
+      path: "/{proxy+}",
+      methods: [httpapi.HttpMethod.ANY],
+      integration: new integrations.HttpLambdaIntegration(
+        "CatchupIntegration",
+        fn,
+      ),
+    });
   }
 }

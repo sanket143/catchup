@@ -22,13 +22,14 @@ impl DBClient {
 pub async fn create_db_connection() -> Result<(), sqlx::Error> {
     POSTGRESQL_DB
         .set({
-            let uri = std::env::var("DATABASE_URL").unwrap();
+            let uri = std::env::var("DATABASE_URL").expect("failed to get DATABASE_URL variable");
+
             PgPoolOptions::new()
                 .max_connections(4)
                 .connect(uri.as_str())
                 .await?
         })
-        .unwrap();
+        .expect("Failed to set value of POSTGRESQL_DB");
 
     Ok(())
 }

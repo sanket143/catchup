@@ -1,5 +1,5 @@
 use juniper::{FieldResult, GraphQLInputObject, graphql_object};
-use sqlx::{Executor, prelude::FromRow};
+use sqlx::prelude::FromRow;
 
 use super::contest::Contest;
 use crate::context::Context;
@@ -42,13 +42,11 @@ impl User {
     where
         E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query(
-            "update user set level = max(level + ?, 1) where username = ?",
-        )
-        .bind(*level_offset)
-        .bind(self.username.clone())
-        .execute(tx)
-        .await?;
+        sqlx::query("update user set level = max(level + ?, 1) where username = ?")
+            .bind(*level_offset)
+            .bind(self.username.clone())
+            .execute(tx)
+            .await?;
 
         Ok(())
     }
@@ -91,7 +89,7 @@ impl User {
     async fn contests(
         &self,
         ctx: &Context,
-        filters: Option<UserContestFilter>,
+        _filters: Option<UserContestFilter>,
     ) -> FieldResult<Vec<Contest>> {
         let mut tx = ctx.db_pool.clone().begin().await?;
         let result = sqlx::query_as::<_, Contest>(
