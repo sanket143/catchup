@@ -1,5 +1,6 @@
 pub mod context;
 pub mod controllers;
+pub mod dataloaders;
 pub mod db;
 pub mod schemas;
 
@@ -11,7 +12,7 @@ use serde_json::Value;
 
 #[derive(Debug)]
 pub struct CatchupContext {
-    username: String,
+    pub username: String,
 }
 
 #[derive(Debug)]

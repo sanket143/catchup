@@ -7,7 +7,7 @@ use sqlx::Row;
 
 #[derive(Debug, sqlx::FromRow)]
 pub struct ProblemTagGroup {
-    pub id: i64,
+    pub id: i32,
     pub name: String,
 }
 
@@ -33,8 +33,8 @@ impl ProblemTagGroup {
                 join contest as c
                 on c.fk_problem_tag_group_id = ptg.id
                 and c.is_deleted = false
-                where ptg.id = ?
-                and c.created_for = ?
+                where ptg.id = $1
+                and c.created_for = $2
             "#,
         )
         .bind(self.id)
@@ -42,12 +42,10 @@ impl ProblemTagGroup {
         .fetch_all(&*ctx.db_pool)
         .await?;
 
-        let contest_ids = stream::iter(
-            rows.into_iter().map(|row| {
-                let id: i64 = row.try_get("id").unwrap_or_default();
-                async move { Contest::by_id(ctx, &id).await }
-            })
-        );
+        let contest_ids = stream::iter(rows.into_iter().map(|row| {
+            let id = row.try_get("id").unwrap_or_default();
+            async move { Contest::by_id(ctx, &id).await }
+        }));
 
         let contests: Vec<Contest> = contest_ids.buffer_unordered(10).try_collect().await?;
 
@@ -64,7 +62,7 @@ impl ProblemTagGroup {
             r#"
             select id, name from problem_tag_group
             order by random() limit 1
-        "#
+        "#,
         )
         .fetch_one(tx)
         .await?;
@@ -75,13 +73,13 @@ impl ProblemTagGroup {
         })
     }
 
-    pub async fn by_id(ctx: &Context, problem_tag_group_id: &i64) -> Result<Self, sqlx::Error> {
+    pub async fn by_id(ctx: &Context, problem_tag_group_id: &i32) -> Result<Self, sqlx::Error> {
         let mut tx = ctx.db_pool.begin().await?;
 
         let row = sqlx::query(
             r#"
                 select id, name from problem_tag_group
-                where id = ? limit 1
+                where id = $1 limit 1
             "#,
         )
         .bind(*problem_tag_group_id)

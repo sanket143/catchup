@@ -1,4 +1,5 @@
 use catchup::{
+    CatchupRequest,
     context::Context,
     db,
     schemas::root::{MutationRoot, QueryRoot, Schema},
@@ -10,6 +11,7 @@ use lazy_static::lazy_static;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    env_logger::init();
     dotenvy::dotenv().ok();
 
     db::create_db_connection()
@@ -21,7 +23,8 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn lambda_handler(request: Request) -> Result<Response<String>, Error> {
-    println!("START: {:?}", request.uri());
+    let catchup_request: CatchupRequest = CatchupRequest::from(&request);
+    log::info!("START: {:?}", request.headers().get("cookie"));
 
     if let Body::Text(text) = request.body() {
         lazy_static! {
@@ -30,14 +33,14 @@ async fn lambda_handler(request: Request) -> Result<Response<String>, Error> {
         }
 
         let graphql_request: Result<GraphQLRequest, _> = serde_json::from_str(text);
-        let ctx = Context::from_request(&request).await;
+        let ctx = Context::from_request(&catchup_request).await?;
 
         request_handler(graphql_request.unwrap(), ctx).await
     } else {
         Ok(Response::builder()
-            .status(http::StatusCode::BAD_REQUEST)
+            .status(http::StatusCode::OK)
             .header("Content-Type", "text/plain")
-            .body("Internal server error".into())
+            .body("Nope".into())
             .unwrap())
     }
 }
@@ -47,28 +50,19 @@ async fn request_handler(request: GraphQLRequest, ctx: Context) -> Result<Respon
         static ref SCHEMA: Schema = Schema::new(QueryRoot, MutationRoot, EmptySubscription::new());
     }
 
-    let graphql_response = serde_json::to_value(request.execute(&SCHEMA, &ctx).await);
+    let graphql_response = serde_json::to_value(request.execute(&SCHEMA, &ctx).await)?;
+    let username = &graphql_response["data"]["createOrLoginUser"]["username"];
 
-    let response = match graphql_response {
-        Ok(response) => {
-            Response::builder()
-                .status(http::StatusCode::OK)
-                .header("Content-Type", "application/json")
-                // .header(http::header::SET_COOKIE, response.clone().get_cookies())
-                .body(response.to_string())
-                .unwrap()
-        }
-        Err(err) => {
-            println!("{:?}", err);
-
-            Response::builder()
-                .status(http::StatusCode::BAD_REQUEST)
-                .header("Content-Type", "text/plain")
-                .body("Internal server error".into())
-                .map_err(Box::new)
-                .unwrap()
-        }
-    };
+    let response = Response::builder()
+        .status(http::StatusCode::OK)
+        .header("Access-Control-Allow-Origin", "http://localhost:3000")
+        .header("Access-Control-Allow-Credentials", "true")
+        .header("Content-Type", "application/json")
+        .header(
+            http::header::SET_COOKIE,
+            "username=sankxt143; SameSite=None; HttpOnly; Max-Age=2592000; Secure",
+        )
+        .body(graphql_response.to_string())?;
 
     Ok(response)
 }

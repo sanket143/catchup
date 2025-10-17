@@ -1,7 +1,7 @@
-use sqlx::Row;
 use juniper::{
     EmptySubscription, FieldError, FieldResult, RootNode, graphql_object, graphql_value,
 };
+use sqlx::Row;
 
 use super::{
     contest::{Contest, CreateContestInput, EndContestInput, EvaluateContestInput},
@@ -31,18 +31,17 @@ impl QueryRoot {
         description = "List of all the problem tag groups, basically a group of Codeforces topics. Refer to migration file in the codebase for list of tag groups."
     )]
     async fn problem_tag_groups(ctx: &Context) -> FieldResult<Vec<ProblemTagGroup>> {
-        let rows = sqlx::query(
-            r#"select id, name from problem_tag_group;"#,
+        let result = sqlx::query_as::<_, ProblemTagGroup>(
+            r#"select id, name from public.problem_tag_group;"#,
         )
         .fetch_all(&*ctx.db_pool)
         .await?;
 
-        let result = rows.into_iter().map(|row| {
-            ProblemTagGroup {
-                id: row.try_get("id").unwrap_or_default(),
-                name: row.try_get("name").unwrap_or_default(),
-            }
-        }).collect();
+        log::info!("{:?}", result);
+        log::info!(
+            "Time taken to compute the sum: {:?}",
+            std::time::Instant::now()
+        );
 
         Ok(result)
     }
@@ -56,8 +55,10 @@ impl MutationRoot {
         description = "Create a user with given username, if it already exists then just return the user"
     )]
     async fn create_or_login_user(ctx: &Context, input: UserInput) -> FieldResult<User> {
-        let mut tx = ctx.db_pool.clone().begin().await?;
-        let user = User::create(&mut *tx, &input.username).await?;
+        let mut tx = ctx.db_pool.begin().await?;
+        let user = User::create(&mut *tx, &input.username)
+            .await
+            .expect("Failed to create a user");
 
         tx.commit().await?;
 

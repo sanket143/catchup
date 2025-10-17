@@ -20,9 +20,14 @@ export class AwsStack extends cdk.Stack {
 
     const httpApi = new httpapi.HttpApi(this, "CatchupHttpApi", {
       corsPreflight: {
-        allowOrigins: ["https://sanket143.me", "https://catchup.sanket143.me"],
-        allowHeaders: ["*"],
+        allowOrigins: [
+          "https://sanket143.me",
+          "https://catchup.sanket143.me",
+          "https://catchup-c1x.pages.dev",
+        ],
+        allowHeaders: ["Content-Type", "Authorization"],
         allowMethods: [
+          httpapi.CorsHttpMethod.GET,
           httpapi.CorsHttpMethod.POST,
           httpapi.CorsHttpMethod.OPTIONS,
         ],

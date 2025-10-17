@@ -1,13 +1,13 @@
 use juniper::{FieldResult, GraphQLInputObject, graphql_object};
-use sqlx::prelude::FromRow;
+use sqlx::{Execute, prelude::FromRow};
 
 use super::contest::Contest;
 use crate::context::Context;
 
 #[derive(Debug, Clone, FromRow)]
 pub struct User {
-    pub id: i64,
-    pub level: i64,
+    pub id: i32,
+    pub level: i32,
     pub username: String,
 }
 
@@ -17,7 +17,7 @@ impl User {
         E: sqlx::PgExecutor<'e>,
     {
         sqlx::query_as::<_, Self>(
-            r#"select id as "id!", username, level from user as u where u.username = ?"#,
+            r#"select u.id, u.username, u.level from public.user as u where u.username = $1"#,
         )
         .bind(username)
         .fetch_one(tx)
@@ -30,19 +30,20 @@ impl User {
     where
         E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query_as::<_, Self>(
-            r#"insert into user (username) values (?) on conflict (username) do update set is_deleted = false returning id as "id!", username, level;"#,
+        let query = sqlx::query_as::<_, Self>(
+            r#"insert into public.user (username) values ($1) on conflict (username) do update set is_deleted = false returning id, username, level"#,
         )
-        .bind(username)
-        .fetch_one(tx)
-        .await
+        .bind(username);
+
+        println!("{}", query.sql());
+        query.fetch_one(tx).await
     }
 
     pub async fn update_level<'e, E>(&self, tx: E, level_offset: &i64) -> sqlx::Result<()>
     where
         E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query("update user set level = max(level + ?, 1) where username = ?")
+        sqlx::query("update user set level = max(level + $1, 1) where username = $2")
             .bind(*level_offset)
             .bind(self.username.clone())
             .execute(tx)
@@ -74,7 +75,7 @@ impl User {
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c
-                where c.created_for = ?
+                where c.created_for = $1
                 order by created_on desc
                 limit 1;
             "#,
@@ -99,7 +100,7 @@ impl User {
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c
-                where c.created_for = ?
+                where c.created_for = $1
                 order by created_on desc;
             "#,
         )

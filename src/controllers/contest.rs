@@ -70,7 +70,7 @@ pub async fn evaluate(ctx: &Context, input: &EvaluateContestInput) -> FieldResul
         pub result: Vec<codeforces::CodeforcesSubmission>,
     }
 
-    let contest_id = input.contest_id as i64;
+    let contest_id = input.contest_id;
     let contest = Contest::by_id(ctx, &contest_id).await?;
 
     // if contest is already evaluated, then no need to proceed further

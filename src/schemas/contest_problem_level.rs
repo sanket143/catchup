@@ -11,7 +11,7 @@ pub struct ContestProblemLevel {
 }
 
 impl ContestProblemLevel {
-    pub async fn get<'e, E>(tx: E, level: i64) -> sqlx::Result<ContestProblemLevel>
+    pub async fn get<'e, E>(tx: E, level: i32) -> sqlx::Result<ContestProblemLevel>
     where
         E: sqlx::PgExecutor<'e>,
     {
@@ -24,7 +24,7 @@ impl ContestProblemLevel {
                 problem_rating_level_3,
                 problem_rating_level_4
             from contest_problem_level as cpl
-            where level = ?;
+            where level = $1;
         "#,
         )
         .bind(level)

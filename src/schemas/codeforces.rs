@@ -5,7 +5,7 @@ pub struct CodeforcesSubmission {
     pub problem: CodeforcesProblem,
     pub verdict: String,
     #[serde(rename = "creationTimeSeconds")]
-    pub creation_time_seconds: i64,
+    pub creation_time_seconds: i32,
 }
 
 #[derive(Deserialize, Debug, Clone)]

@@ -5,7 +5,9 @@ import QuickLink from '../components/QuickLinks.vue'
 import problemTagGroupsRequest from '@/client/problemTagGroup/list'
 import userDashboardRequest from '@/client/user/dashboard'
 import { ref, computed } from 'vue'
+import { useUserStore } from '@/stores/user'
 
+const userStore = useUserStore()
 const state = ref({
   problemTagGroups: [],
   user: null,
@@ -50,11 +52,11 @@ fetchUserDashboardDetails()
 </script>
 
 <template>
-  <div class="stat-cards" v-if="state?.user">
-    <StatCard title="Total contests" :count="computedState.totalContests" />
-    <StatCard title="Overall level" :count="computedState.overallLevel" />
-    <StatCard title="Total problems solved" :count="computedState.totalProblemsSolved" />
-    <StatCard title="Codeforces profile" :count="state.user.username" />
+  <div class="stat-cards" v-if="state?.user || userStore.username.length > 0">
+    <StatCard title="Total contests" :count="computedState.totalContests ?? '~'" />
+    <StatCard title="Overall level" :count="computedState.overallLevel ?? '~'" />
+    <StatCard title="Total problems solved" :count="computedState.totalProblemsSolved ?? '~'" />
+    <StatCard title="Codeforces profile" :count="userStore.username" />
     <div class="dashboard">
       <Dashboard :problemTagGroups="state.problemTagGroups" />
     </div>
