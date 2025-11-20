@@ -53,9 +53,9 @@ impl Contest {
     async fn problem_tag_group(&self, ctx: &Context) -> FieldResult<ProblemTagGroup> {
         ProblemTagGroup::by_id(ctx, &self.fk_problem_tag_group_id)
             .await
-            .map_err(|_| {
+            .map_err(|e| {
                 FieldError::new(
-                    "Failed to get problem tag group for a contest",
+                    format!("Failed to get problem tag group for a contest: {:?}", e),
                     graphql_value!({}),
                 )
             })
@@ -64,9 +64,9 @@ impl Contest {
     async fn problems(&self, ctx: &Context) -> FieldResult<Vec<ContestProblemMap>> {
         ContestProblemMap::by_contest_id(ctx, &self.id)
             .await
-            .map_err(|_| {
+            .map_err(|e| {
                 FieldError::new(
-                    "Unable to fetch contest problem map for a Contest",
+                    format!("Unable to fetch contest problem map for a Contest: {:?}", e),
                     graphql_value!({}),
                 )
             })
@@ -113,7 +113,7 @@ impl Contest {
     pub async fn create<'e, E>(
         tx: E,
         input: &CreateContestInput,
-        duration: &i64,
+        duration: &i32,
         user: &User,
         problem_tag: &ProblemTagGroup,
     ) -> sqlx::Result<Self>
@@ -123,7 +123,7 @@ impl Contest {
         sqlx::query_as::<_, Self>(
             r#"
                 insert into contest (name, duration, level, created_for, fk_problem_tag_group_id)
-                values ($1, $2, $3, $4, $5) returning id as "id!", name, duration, level,
+                values ($1, $2, $3, $4, $5) returning id, name, duration, level,
                 created_on, started_on, created_for, fk_problem_tag_group_id,
                 is_evaluated
             "#,
@@ -160,7 +160,7 @@ impl Contest {
     pub async fn add_random_problem<'e, E>(
         &self,
         tx: E,
-        problem_rating: &i64,
+        problem_rating: &i32,
         problem_tag_group: &ProblemTagGroup,
     ) -> sqlx::Result<()>
     where

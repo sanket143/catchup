@@ -8,11 +8,6 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   plugins: [vue(), vueDevTools()],
   server: {
-    proxy: {
-      '/graphql': {
-        target: 'http://localhost:3001',
-      },
-    },
     host: '127.0.0.1',
     port: 3000,
   },

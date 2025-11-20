@@ -39,11 +39,11 @@ impl User {
         query.fetch_one(tx).await
     }
 
-    pub async fn update_level<'e, E>(&self, tx: E, level_offset: &i64) -> sqlx::Result<()>
+    pub async fn update_level<'e, E>(&self, tx: E, level_offset: &i32) -> sqlx::Result<()>
     where
         E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query("update user set level = max(level + $1, 1) where username = $2")
+        sqlx::query("update public.user set level = greatest(level + $1, 1) where username = $2")
             .bind(*level_offset)
             .bind(self.username.clone())
             .execute(tx)
@@ -71,7 +71,7 @@ impl User {
         let result = sqlx::query_as::<_, Contest>(
             r#"
                 select
-                    c.id as "id!", c.name, c.duration, c.level, c.created_on,
+                    c.id, c.name, c.duration, c.level, c.created_on,
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c
@@ -96,7 +96,7 @@ impl User {
         let result = sqlx::query_as::<_, Contest>(
             r#"
                 select
-                    c.id as "id!", c.name, c.duration, c.level, c.created_on,
+                    c.id, c.name, c.duration, c.level, c.created_on,
                     c.started_on, c.created_for, c.fk_problem_tag_group_id,
                     c.is_evaluated
                 from contest as c

@@ -11,7 +11,7 @@ export default async ({
 }) => {
   return axios({
     method: 'post',
-    url: 'https://gql-catchup.sanket143.me/',
+    url: 'http://localhost:9000/graphql',
     data: {
       query,
       variables,

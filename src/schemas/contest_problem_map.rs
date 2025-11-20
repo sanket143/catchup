@@ -58,12 +58,12 @@ impl ContestProblemMap {
     pub async fn by_contest_id(ctx: &Context, contest_id: &i32) -> sqlx::Result<Vec<Self>> {
         sqlx::query_as::<_, Self>(
             r#"
-                select cpm.id as "id!",
+                select cpm.id,
                     cpm.fk_contest_id,
                     cpm.fk_problem_id,
                     cpm.latest_submission_at,
-                    cpm.is_evaluated as "is_evaluated!",
-                    cpm.verdict as "verdict!"
+                    cpm.is_evaluated,
+                    cpm.verdict
                 from contest_problem_map as cpm
                 where cpm.fk_contest_id = $1
             "#,

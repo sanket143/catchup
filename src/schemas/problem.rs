@@ -38,7 +38,7 @@ impl Problem {
         let mut tx = ctx.db_pool.begin().await?;
 
         sqlx::query_as::<_, Self>(
-            r#"select id as "id!", uid, title, url, rating from problem where id = $1"#,
+            r#"select id, uid, title, url, rating from problem where id = $1"#,
         )
         .bind(*id)
         .fetch_one(&mut *tx)
