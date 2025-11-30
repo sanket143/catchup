@@ -11,7 +11,7 @@ export class AwsStack extends cdk.Stack {
     const fn = new lambda.Function(this, "catchup", {
       code: lambda.Code.fromAsset("../target/lambda/catchup/bootstrap.zip"),
       runtime: lambda.Runtime.PROVIDED_AL2023,
-      handler: "catchup", // matches serverless.yml
+      handler: "catchup",
       architecture: lambda.Architecture.ARM_64,
       environment: {
         DATABASE_URL: "",
