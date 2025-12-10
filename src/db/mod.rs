@@ -1,16 +1,38 @@
-use std::sync::Arc;
+use once_cell::sync::OnceCell;
+use sqlx::Pool;
+use sqlx::Postgres;
+use sqlx::postgres::PgPoolOptions;
 
-use anyhow::Result;
-use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
+static POSTGRESQL_DB: OnceCell<Pool<Postgres>> = OnceCell::new();
+static DB_CLIENT: DBClient = DBClient {};
 
-pub type Pool = Arc<SqlitePool>;
+#[derive(Clone, Copy)]
+pub struct DBClient;
 
-pub async fn get_db_pool() -> Result<SqlitePool, sqlx::Error> {
-    let db_file = dotenvy::var("DATABASE_FILE").unwrap();
-    let options = SqliteConnectOptions::new()
-        .filename(db_file)
-        .create_if_missing(true)
-        .journal_mode(sqlx::sqlite::SqliteJournalMode::Delete); // Explicitly set to DELETE mode
+impl DBClient {
+    pub fn get() -> &'static DBClient {
+        &DB_CLIENT
+    }
 
-    SqlitePool::connect_with(options).await
+    pub async fn pool(self) -> &'static sqlx::Pool<Postgres> {
+        log::info!("pool");
+        POSTGRESQL_DB.get().unwrap()
+    }
+}
+
+pub async fn create_db_connection() -> Result<(), sqlx::Error> {
+    log::info!("create_db_connection");
+
+    POSTGRESQL_DB
+        .set({
+            let uri = std::env::var("DATABASE_URL").expect("failed to get DATABASE_URL variable");
+
+            PgPoolOptions::new()
+                .max_connections(25)
+                .connect(uri.as_str())
+                .await?
+        })
+        .expect("Failed to set value of POSTGRESQL_DB");
+
+    Ok(())
 }

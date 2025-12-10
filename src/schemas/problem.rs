@@ -5,11 +5,11 @@ use crate::context::Context;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct Problem {
-    pub id: i64,
+    pub id: i32,
     pub uid: String,
     pub title: String,
     pub url: String,
-    pub rating: Option<i64>,
+    pub rating: Option<i32>,
 }
 
 #[graphql_object(Context = Context)]
@@ -34,18 +34,13 @@ impl Problem {
 }
 
 impl Problem {
-    pub async fn by_id(ctx: &Context, id: &i64) -> sqlx::Result<Self> {
+    pub async fn by_id(ctx: &Context, id: &i32) -> sqlx::Result<Self> {
         let mut tx = ctx.db_pool.begin().await?;
 
-        sqlx::query_as!(
-            Self,
-            r#"
-                select p.id, p.uid, p.title, p.url, p.rating
-                from problem as p
-                where p.id = ?
-            "#,
-            id
+        sqlx::query_as::<_, Self>(
+            r#"select id, uid, title, url, rating from problem where id = $1"#,
         )
+        .bind(*id)
         .fetch_one(&mut *tx)
         .await
     }

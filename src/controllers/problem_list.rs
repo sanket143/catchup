@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use juniper::{FieldError, FieldResult, graphql_value};
+use juniper::FieldResult;
 use serde::Deserialize;
 use sqlx::{QueryBuilder, Row};
 
@@ -15,7 +15,7 @@ struct CodeforcesProblem {
     pub index: String,
     pub name: String,
     pub tags: Vec<String>,
-    pub rating: Option<u32>,
+    pub rating: Option<i32>,
 }
 
 impl CodeforcesProblem {
@@ -43,7 +43,7 @@ pub async fn sync_problem_list(ctx: &Context) -> FieldResult<bool> {
         .body_mut()
         .read_json()?;
 
-    let mut query_builder: QueryBuilder<sqlx::Sqlite> = QueryBuilder::new("");
+    let mut query_builder: QueryBuilder<sqlx::Postgres> = QueryBuilder::new("");
     let mut tags = HashSet::new();
     let mut problem_tags_map = vec![];
 
@@ -79,7 +79,7 @@ pub async fn sync_problem_list(ctx: &Context) -> FieldResult<bool> {
         let result = query_builder.build().fetch_all(&mut *tx).await.unwrap();
 
         result.iter().for_each(|x| {
-            let id: u32 = x.get("id");
+            let id: i32 = x.get("id");
             let metadata: serde_json::Value = x.get("metadata");
             let tags = metadata["tags"].as_array().unwrap().to_vec();
 
@@ -89,7 +89,7 @@ pub async fn sync_problem_list(ctx: &Context) -> FieldResult<bool> {
         });
     }
 
-    let mut problem_tag_query_builder: QueryBuilder<sqlx::Sqlite> =
+    let mut problem_tag_query_builder: QueryBuilder<sqlx::Postgres> =
         QueryBuilder::new("insert into problem_tag (uid) ");
 
     problem_tag_query_builder.push_values(tags, |mut b, x| {
@@ -107,13 +107,13 @@ pub async fn sync_problem_list(ctx: &Context) -> FieldResult<bool> {
 
     let mut tag_uid_id_map = HashMap::new();
     result.iter().for_each(|x| {
-        let id: u32 = x.get("id");
+        let id: i32 = x.get("id");
         let uid: String = x.get("uid");
 
         tag_uid_id_map.insert(uid, id);
     });
 
-    let mut problem_tag_map_query_builder: QueryBuilder<sqlx::Sqlite> = QueryBuilder::new("");
+    let mut problem_tag_map_query_builder: QueryBuilder<sqlx::Postgres> = QueryBuilder::new("");
 
     for chunk in problem_tags_map.chunks(BIND_LIMIT / 6) {
         problem_tag_map_query_builder.reset();

@@ -11,12 +11,13 @@ export default async ({
 }) => {
   return axios({
     method: 'post',
-    url: '/graphql',
+    url: 'http://localhost:9000/graphql',
     data: {
       query,
       variables,
     },
     headers,
+    withCredentials: true,
   }).then(({ data: { data, errors } }) => {
     if (errors?.length > 0) {
       throw errors[0]

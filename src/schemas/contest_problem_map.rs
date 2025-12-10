@@ -7,10 +7,10 @@ use super::{contest::Contest, problem::Problem};
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct ContestProblemMap {
-    pub id: i64,
-    pub fk_contest_id: i64,
-    pub fk_problem_id: i64,
-    pub latest_submission_at: Option<i64>,
+    pub id: i32,
+    pub fk_contest_id: i32,
+    pub fk_problem_id: i32,
+    pub latest_submission_at: Option<i32>,
     pub is_evaluated: bool,
     pub verdict: String,
 }
@@ -55,21 +55,20 @@ impl ContestProblemMap {
 }
 
 impl ContestProblemMap {
-    pub async fn by_contest_id(ctx: &Context, contest_id: &i64) -> sqlx::Result<Vec<Self>> {
-        sqlx::query_as!(
-            Self,
+    pub async fn by_contest_id(ctx: &Context, contest_id: &i32) -> sqlx::Result<Vec<Self>> {
+        sqlx::query_as::<_, Self>(
             r#"
-                select cpm.id as "id!",
+                select cpm.id,
                     cpm.fk_contest_id,
                     cpm.fk_problem_id,
                     cpm.latest_submission_at,
-                    cpm.is_evaluated as "is_evaluated!",
-                    cpm.verdict as "verdict!"
+                    cpm.is_evaluated,
+                    cpm.verdict
                 from contest_problem_map as cpm
-                where cpm.fk_contest_id = ?
+                where cpm.fk_contest_id = $1
             "#,
-            contest_id
         )
+        .bind(*contest_id)
         .fetch_all(&*ctx.db_pool)
         .await
     }
@@ -78,26 +77,24 @@ impl ContestProblemMap {
     // and problem_id
     pub async fn update_evaluation_stats<'e, E>(
         tx: E,
-        contest_id: &i64,
-        problem_id: &i64,
-        stat: &(i64, String),
+        contest_id: &i32,
+        problem_id: &i32,
+        stat: &(i32, String),
     ) -> sqlx::Result<()>
     where
-        E: sqlx::Executor<'e, Database = sqlx::Sqlite>,
+        E: sqlx::PgExecutor<'e>,
     {
-        sqlx::query!(
+        sqlx::query(
             r#"
-            update contest_problem_map as cpm
-            set is_evaluated = true,
-            latest_submission_at = ?,
-            verdict = ?
-            where cpm.fk_contest_id = ? and cpm.fk_problem_id = ?;
-        "#,
-            stat.0,
-            stat.1,
-            contest_id,
-            problem_id
+                update contest_problem_map
+                set latest_submission_at = $1, verdict = $2, is_evaluated = true
+                where fk_contest_id = $3 and fk_problem_id = $4;
+            "#,
         )
+        .bind(stat.0 as i32)
+        .bind(stat.1.clone())
+        .bind(*contest_id as i32)
+        .bind(*problem_id as i32)
         .execute(tx)
         .await?;
 

@@ -1,38 +1,37 @@
-use crate::schemas::user::{self, User};
-use actix_web::dev::Payload;
-use actix_web::{FromRequest, HttpRequest, web};
-use futures::future::BoxFuture;
-use sqlx::SqlitePool;
-use std::sync::Arc;
+use crate::dataloaders::Dataloaders;
+use crate::schemas::user;
+use crate::{CatchupRequest, db};
+use lambda_http::Request;
+use sqlx::PgPool;
 
 pub struct Context {
-    pub db_pool: Arc<SqlitePool>,
+    pub db_pool: &'static PgPool,
     pub user: Option<user::User>,
+    pub datalaoders: Dataloaders,
 }
 
 impl juniper::Context for Context {}
 
-impl FromRequest for Context {
-    type Error = actix_web::Error;
-    type Future = BoxFuture<'static, Result<Self, Self::Error>>;
+impl Context {
+    pub async fn from_request(request: &CatchupRequest<'_>) -> Result<Self, lambda_http::Error> {
+        let db_pool = db::DBClient::get().pool().await;
 
-    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
-        let pool_data = req.app_data::<web::Data<Arc<SqlitePool>>>()
-            .expect("DB Pool not configured in app_data. Make sure to call .app_data(web::Data::new(pool.clone()))");
-        let pool = pool_data.get_ref().clone(); // Clone the Arc<SqlitePool>
-        let username = req.cookie("username").map(|c| c.value().to_string());
+        let user = if let Some(context) = &request.context {
+            Some(
+                user::User::by_username(db_pool, &context.username)
+                    .await
+                    .unwrap(),
+            )
+        } else {
+            None
+        };
 
-        Box::pin(async move {
-            let mut user = None;
+        let ctx = Self {
+            user,
+            db_pool,
+            datalaoders: Dataloaders::new(&db_pool),
+        };
 
-            if let Some(username) = username.map(|x| (!x.is_empty()).then_some(x)).flatten() {
-                user = User::by_username(&*pool, &username).await.ok();
-            }
-
-            Ok(Context {
-                user,
-                db_pool: pool,
-            })
-        })
+        Ok(ctx)
     }
 }
